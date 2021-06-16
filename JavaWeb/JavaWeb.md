@@ -1060,6 +1060,7 @@ HTTP（HyperText Transfer Protocol）：超文本传输协议
   - 请求和响应必须成对出现
 - 无状态的：每次请求之间相互独立，不能交互数据
 - 简单快捷：发送请求=请求方式+请求路径
+- 可扩展的：在HTTP/1.0中出现的HTTP headers让协议扩展变得非常容易，只要服务端和客户端就新headers达成语义一致，新功能就可以被轻松加入进来
 
 **版本：**
 
@@ -1688,6 +1689,10 @@ ServletContext代表整个web应用，可以和程序的容器（如Tomcat）来
 
 概念：将数据以Cookie对象的形式保存在客户端的会话技术
 
+> HTTP Cookie（也叫Web Cookie或浏览器Cookie）是服务器发送到用户浏览器并保存在本地的一小块数据，它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上。通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。Cookie使基于无状态的HTTP协议记录稳定的状态信息成为了可能。
+
+![](JavaWeb.assets/cookie.png)
+
 使用步骤：
 
 1. 创建Cookie对象，绑定数据
@@ -1721,6 +1726,8 @@ Cookie的分类：
 概念：服务器为每一个用户的浏览器创建一个独享的Ssession对象
 
 服务器开辟一片内存空间，对应唯一标识ID，在每次响应时将该ID返回给客户端
+
+![](JavaWeb.assets/session.png)
 
 服务器端--->客户端响应头：`set-cookie: sessionID=xxx`
 
