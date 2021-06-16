@@ -14,7 +14,7 @@ htm是老的命名规范，html是新的
 
 标签+内容体+/标签
 
-空标签，例如`</br>`
+空标签，例如`</br>`可以起到换行的作用
 
 html标签不区分大小写
 
@@ -1143,6 +1143,8 @@ JSON可以对Java数据进行封装，现在多用于存储和交换文本信息
 
 JSON比XML更小、更快、更易解析
 
+> JSON 独立于语言：JSON 使用 Javascript语法来描述数据对象，但是 JSON 仍然独立于语言和平台。JSON 解析器和 JSON 库支持许多不同的编程语言。 目前非常多的动态（PHP，JSP，.NET）编程语言都支持JSON。
+
 Java对象--->JSON字符串--->JS对象
 
 常用于异步请求中
@@ -1162,6 +1164,13 @@ JSON数据由**键值对**构成，即名称/值对；键值对由逗号隔开
 - 数组对象[索引]
 
 
+
+### 3 JSON使用
+
+> JSON和XML最大的不同：XML 需要使用 XML 解析器来解析，JSON 可以使用标准的 JavaScript 函数来解析。
+>
+> - `JSON.parse()`：将一个JSON字符串转换为JavaScript对象
+> - `JSON.stringify()`：将JavaScript值转换为JSON字符串
 
 互联网传输中：Java对象<--->JSON
 
