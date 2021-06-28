@@ -1402,6 +1402,8 @@ public class CollectionDemo {
 }
 ```
 
+
+
 ### 2 List
 
 序列
@@ -1484,6 +1486,8 @@ public class LinkedListDemo {
 }
 ```
 
+
+
 ### 3 Set
 
 **哈希值**：是JDK根据对象的**地址**或者**字符串**或者**数字**算出来的int类型的**数值**
@@ -1532,6 +1536,8 @@ TreeSet<Student> ts = new TreeSet<Student>(new Comparator<Student>() {
 });
 ```
 
+
+
 ### 4 泛型
 
 泛型是JDK5中引入的特性
@@ -1553,6 +1559,8 @@ TreeSet<Student> ts = new TreeSet<Student>(new Comparator<Student>() {
 格式：修饰符 返回值类型 方法名（数据类型... 变量名） {}
 如：`public static int sum(int... a) {}`
 如果一个方法有多个参数，可变参数要放到最后
+
+
 
 ### 5 Map
 
@@ -1638,7 +1646,7 @@ public class TreeMapDemo {
 
 输入`HelloWorldJava`，控制台输出`H(1)J(1)W(1)a(2)d(1)e(1)l(3)o(2)r(1)v(1)`
 
----
+
 
 ### 6 Collections
 
@@ -1703,6 +1711,8 @@ public class PokerDemo {
 
 
 
+
+
 ## 第2节 其他常用集合
 
 ### 1 Deque
@@ -1747,9 +1757,13 @@ class Solution {
 }
 ```
 
+
+
 ### 2 Queue
 
 Queue接口与List，Set同一级别，Deque继承了Queue
+
+不允许放入null元素
 
 使用LinkedList实现Queue接口可以用于实现队列
 
@@ -1764,6 +1778,24 @@ E poll(); //出队，队列为空返回null
 E element(); //返回队首，队列为空抛出异常
 E peek(); //返回队首，队列为空返回null
 ```
+
+
+
+### 3 PriorityQueue
+
+PriorityQueue实现了Queue接口
+
+PriorityQueue是基于优先堆的一个无界队列，这个**优先队列**中的元素可以默认**自然排序**或者通过提供的**比较器**在队列实例化时排序
+
+PriorityQueue的第一个元素默认是指定排序的最小元素（若有多个最小元素则随机地取其中一个），即**默认小顶堆**，底层通过**数组**实现
+
+![](Java基础.assets/priorityqueue.png)
+
+PriorityQueue是**非线程安全**的，所以Java提供了PriorityBlockingQueue（实现BlockingQueue接口）用于多线程环境
+
+[源码分析](https://blog.csdn.net/u010623927/article/details/87179364)
+
+
 
 
 
