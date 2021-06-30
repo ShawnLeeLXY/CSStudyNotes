@@ -204,7 +204,7 @@ Runnable run = () -> System.out.println("Run");
 list.forEach(System.out::println);
 
 // Groovy 3 below
-Runnable run = { println 'run' }
+Runnable run = { println 'Run' }
 list.each { println it } // or list.each(this.&println)
 ```
 
@@ -448,7 +448,9 @@ eachLine('a'..'z') { println it }
 // 直接类型定义或者通过as关键字指定类型
 String[] arr = ['Alice', 'Betty', 'Cindy']
 //def arr = ['Alice', 'Betty', 'Cindy'] as String[]
-println arr instanceof String[]//ture
+//Groovy 3+可以如下声明数组
+//def arr = new String[] {'Alice', 'Betty', 'Cindy'}
+println arr instanceof String[]//true
 println arr instanceof List//false
 ```
 
@@ -520,3 +522,84 @@ for (x in 1..10) {
 }
 ```
 
+
+
+### 11 输出
+
+```groovy
+// 四种方式都可以在控制台打印"print it!"
+System.out.println('print it!')
+System.out.println 'print it!'
+println('print it!')
+println 'print it!'
+```
+
+
+
+
+
+## 第4节 JSON操作
+
+### 1 JsonSlurper
+
+JsonSlurper是一个将JSON文本或阅读器内容解析为Groovy数据的类结构，例如map，列表和原始类型，如整数，双精度，布尔和字符串。
+
+解析JSON字符串：
+
+```groovy
+import groovy.json.JsonSlurper
+
+def jsonSlurper = new JsonSlurper()
+
+// 解析JSON字符串
+def object = jsonSlurper.parseText('{ "name": "Alice", "id" : "001"}')
+println object.name
+println object.id
+
+// 解析JSON数组
+Object list = jsonSlurper.parseText('{ "arr": [1, 2, 3, 4, 5] }')
+list.each { println it }
+
+// 解析基本数据类型列表
+def obj = jsonSlurper.parseText ''' {"integer": 16, "fraction": 16.33, "double": 16e13}'''
+println(obj.integer + ', ' + obj.integer.getClass().getName())
+println(obj.fraction + ', ' +obj.fraction.getClass().getName())
+println(obj.double + ', ' + obj.double.getClass().getName())
+```
+
+运行结果输出：
+
+> Alice
+> 001
+> arr=[1, 2, 3, 4, 5]
+> 16, java.lang.Integer
+> 16.33, java.math.BigDecimal
+> 1.6E+14, java.math.BigDecimal
+
+
+
+### 2 JsonOutput
+
+JsonOutput类可以将Groovy对象序列化为JSON字符串
+
+```groovy
+import groovy.json.JsonOutput
+
+// 直接创建JSON
+def output = JsonOutput.toJson([name: 'Alice', age: 18])
+println(output)
+
+// 根据对象生成JSON
+class Student {
+    String name
+    int age;
+}
+def output2 = JsonOutput.toJson([new Student(name: 'Alice', age:18),
+                                 new Student(name: 'Betty', age:19)])
+println(output2)
+```
+
+运行结果输出：
+
+> {"name":"Alice","age":18}
+> [{"age":18,"name":"Alice"},{"age":19,"name":"Betty"}]
