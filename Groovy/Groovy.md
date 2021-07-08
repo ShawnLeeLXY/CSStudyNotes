@@ -448,6 +448,7 @@ eachLine('a'..'z') { println it }
 // 直接类型定义或者通过as关键字指定类型
 String[] arr = ['Alice', 'Betty', 'Cindy']
 //def arr = ['Alice', 'Betty', 'Cindy'] as String[]
+//def arr = new int[3]
 //Groovy 3+可以如下声明数组
 //def arr = new String[] {'Alice', 'Betty', 'Cindy'}
 println arr instanceof String[]//true
