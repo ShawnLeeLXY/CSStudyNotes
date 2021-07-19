@@ -259,7 +259,7 @@ void m(Integer i) {
 
 在Groovy中：
 
-- 判断a全等于b：`a ==b `
+- 判断a全等于b：`a == b `
   - 对Comparable对象，转换为`a.compareTo(b) == 0`
   - 对其他对象，转换为`a.equals(b)`
 - 判断引用a等于引用b：
