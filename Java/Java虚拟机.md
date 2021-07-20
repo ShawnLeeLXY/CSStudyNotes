@@ -371,3 +371,6 @@ Class文件结构：
 **类索引查找全限定名的过程：**
 
 类索引--->常量池{类描述符常量（如CONSTANT_Class_info）--->全限定名字符串（如CONSTANT_Utf8_info）}
+
+![](Java虚拟机.assets/3.png)
+
