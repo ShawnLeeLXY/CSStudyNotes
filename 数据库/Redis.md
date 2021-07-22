@@ -375,6 +375,10 @@ public class JedisPoolTest {
 
 
 
+**Spring-data-redis**是spring大家族的一部分，提供了在srping应用中通过简单的配置访问redis服务，对reids底层开发包(Jedis, JRedis, and RJC)进行了高度封装，**RedisTemplate**提供了redis各种操作、异常处理及序列化，支持发布订阅，并对spring 3.1 cache进行了实现。
+
+
+
 **配置Redis：**
 
 - 配置数据库参数（默认key类型是Object）
@@ -538,9 +542,17 @@ public class RedisTests {
 
 ### 2 Redis的事务管理
 
-启动一个事务后：多个命令输入后会放入一个队列里，依次执行
+> 事务是数据库管理系统执行过程中的一个逻辑单位，由一个有限的数据库操作序列构成。
 
-因此查询命令应放在事务之前或之后
+Redis事务的三个状态：
+
+1. 开始：以MULTI开始一个事务
+2. 入队：将多个命令入队到事务中，接到这些命令并不会立即执行，而是放到等待执行的事务队列里面
+3. 执行：由EXEC命令触发事务
+
+Redis不支持事务回滚
+
+查询命令应放在事务之前或之后
 
 ```java
 // 编程式事务
