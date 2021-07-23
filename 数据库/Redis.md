@@ -51,6 +51,8 @@ Redis的数据结构：key+value
 
 key都是字符串
 
+key可以为null
+
 `incr key`将key对应的value值加1然后返回
 
 `decr key`将key对应的value值减1然后返回
@@ -75,10 +77,10 @@ value的数据结构：
 
 哈希类型hash：
 
-- 存储：hset key filed value
+- 存储：hset key field value
 - 获取：
-  - hget key filed value 获取指定的filed对应的值
-  - hgetall key 获取所有的filed和value
+  - hget key feild value 获取指定的field对应的值
+  - hgetall key 获取所有的field和value
 - 删除：hdel key field
 
 
