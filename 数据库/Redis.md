@@ -402,6 +402,8 @@ spring.redis.port=6379
 
 
 
+默认情况下，SpringBoot中配置的Redis序列化器为JdkSerializationRedisSerializer，其特点是在Redis中Key的值会带一个前缀，这个前缀在一些查询工具中会以乱码的形式展现，自然也没法用查询工具查的其中的值。因此，我们需要做默认的配置做一些变更。
+
 编写配置类RedisConfig：
 
 ```java
@@ -506,6 +508,7 @@ public class RedisTests {
         System.out.println(redisTemplate.opsForZSet().zCard(redisKey));
         System.out.println(redisTemplate.opsForZSet().score(redisKey, "Hedy"));
         System.out.println(redisTemplate.opsForZSet().reverseRank(redisKey, "Hedy"));
+        // 返回Set接口的内置实现类
         System.out.println(redisTemplate.opsForZSet().reverseRange(redisKey, 0, 2));
     }
 
