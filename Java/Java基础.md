@@ -8,13 +8,19 @@ Java是一种由Sun公司在1995年推出的计算机语言
 
 Java之父：James Gosling
 
-![](Java基础.assets/1.png)
+![](Java基础.assets/java-history.png)
+
+目前工程中最常用的是Java 8.0
+
+
 
 ### 2 Java语言跨平台原理
 
 **跨平台原理**
 
 **JVM**(Java Virtual Machine)：Java虚拟机，有windosw版、Mac版、Linux版等等，在不同的操作系统上安装对应版本即可翻译Java语言
+
+
 
 ### 3 JRE和JDK
 
@@ -24,7 +30,9 @@ Java之父：James Gosling
 
 包含关系：
 
-![](Java基础.assets/2.png)
+![](Java基础.assets/jdk-jre.png)
+
+
 
 ### 4 JDK的下载和安装
 
@@ -32,13 +40,28 @@ Java之父：James Gosling
 
 
 
+
+
 ## 第2节 第一个程序
 
 ### 1 常用DOS命令
 
-![](Java基础.assets/3.png)
+| 操作                | 说明                            |
+| ------------------- | ------------------------------- |
+| 盘符名称：          | 盘符切换。E:回车，表示切换到E盘 |
+| dir                 | 查看当前路径下的内容            |
+| cd 目录             | 进入单级目录                    |
+| cd ..               | 回退到上一级目录                |
+| cd 目录1\目录2\\... | 进入多级目录                    |
+| cd \                | 回退到盘符目录                  |
+| cls                 | 清屏                            |
+| exit                | 退出命令提示符窗口              |
+
+
 
 ### 2 Path环境变量的配置
+
+[WIN10下Java环境变量配置](https://www.cnblogs.com/qiuyu666/p/10779799.html)
 
 
 
@@ -52,11 +75,11 @@ public class HelloWorld {
 }
 ```
 
-### 4 HelloWorld案例常见问题
 
 
+### 4 Notepad软件的安装和使用
 
-### 5 Notepad软件的安装和使用
+Notepad++是一款免费的轻量级文本编辑器，支持多种编程语言
 
 
 
@@ -93,11 +116,15 @@ public class HelloWorld {
 }
 ```
 
+
+
 ### 2 关键字
 
 **关键字**就是被Java语言赋予了特定含义的单词*（Java的关键字有50个左右）*
 
 关键字字母全部小写
+
+
 
 ### 3 常量
 
@@ -105,17 +132,30 @@ public class HelloWorld {
 
 （空常量是不能通过`System.out.println()`直接输出的）
 
+
+
 ### 4 数据类型
 
 **计算机存储单元：**位（bit）、字节（byte或B）
 
 数据类型分类：
 
-![](Java基础.assets/4.png)
+![](Java基础.assets/data-type.png)
 
 数据类型内存占用和取值范围：
 
-![](Java基础.assets/5.png)
+| 数据类型 |      关键字      | 内存占用 |                           取值范围                           |
+| :------: | :--------------: | :------: | :----------------------------------------------------------: |
+|   整数   |       byte       |    1     |                           -128~127                           |
+|   整数   |      short       |    2     |                         -32768~32767                         |
+|   整数   |  **int(默认)**   |    4     |                    -2147483648~2147483647                    |
+|   整数   |       long       |    8     |                     $-2^{63}$​~$2^{63}-1$​                     |
+|  浮点数  |      float       |    4     | 负数：-3.402823E+38~-1.401298E-45<br />正数：1.401298E-45~3.402823E+38 |
+|  浮点数  | **double(默认)** |    8     | 负数：-1.797693E+308~-4.9000000E-234<br />正数：4.9000000E-324~1.797693E+308 |
+|   字符   |       char       |    2     |                           0~65535                            |
+|   布尔   |     boolean      |    1     |                         true, false                          |
+
+
 
 ### 5 变量
 
@@ -133,6 +173,8 @@ float f = 13.14F;
 System.out.println(f);
 ```
 
+
+
 ### 6 标识符
 
 标识符常见命名约定：
@@ -140,15 +182,19 @@ System.out.println(f);
 1. 小驼峰命名法：<u>方法</u>、<u>变量</u>
 2. 大驼峰命名法：<u>类</u>
 
+
+
 ### 7 类型转换
 
-自动类型转换
+自动类型转换：
 
 表示数据范围从小到大：
 
-![](Java基础.assets/6.png)
+![](Java基础.assets/type-conversion.png)
 
-强制类型转换（可能会有数据丢失）
+强制类型转换：可能会有数据丢失
+
+
 
 
 
@@ -175,9 +221,15 @@ System.out.println(f);
 
 ### 3 自增自减运算符
 
+自增运算符：`i++`和`++i`
+
+自减运算符：`i--`和`--i`
+
 
 
 ### 4 关系运算符
+
+关系运算符：小于、大于、小于等于、大于等于、等于、不等于
 
 运算结果一定为boolean型
 
@@ -226,6 +278,8 @@ public class ScannerDemo {
 
 
 
+
+
 ## 第6节 分支语句
 
 ### 1 流程控制
@@ -239,11 +293,29 @@ public class ScannerDemo {
 对于一个程序，通常的数据测试要包含：正确数据，边界数据，错误数据
 这样的程序才具有健壮性
 
+
+
 ### 2 if语句
 
 
 
 ### 3 switch语句
+
+```java
+switch(expression) {
+    case value1 :
+       //语句
+       break; //可选
+    case value2 :
+       //语句
+       break; //可选
+    //可以有任意数量的case语句
+    default : //可选
+       //语句
+}
+```
+
+
 
 
 
@@ -269,6 +341,8 @@ public class ScannerDemo {
 
 `break`
 
+
+
 ### 5 循环嵌套
 
 
@@ -293,6 +367,8 @@ public class RandomDemo {
 
 
 
+
+
 ## 第8节 IDEA
 
 ### 1 IDEA概述和安装
@@ -307,7 +383,9 @@ IDEA全程IntelliJ IDEA，是用于Java语言开发的**集成环境**，它是�
 
 ### 3 IDEA中项目结构
 
-![](Java基础.assets/7.png)
+![](Java基础.assets/idea-structure.png)
+
+
 
 ### 4 IDEA中内容辅助键和快捷键
 
@@ -327,11 +405,15 @@ IDEA全程IntelliJ IDEA，是用于Java语言开发的**集成环境**，它是�
 
 格式二：数据类型 变量名[]
 
+
+
 ### 2 数组初始化之动态初始化
 
 格式：数据类型[] 变量名=new 数据类型[数组长度]
 
 其中`new`为数组申请内存空间
+
+
 
 ### 3 数组元素访问
 
@@ -345,16 +427,22 @@ int[] arr = new int[3];
 //使用完毕，会在垃圾回收器空闲时被回收
 ```
 
+
+
 ### 5 数组初始化之静态初始化
 
 格式：数据类型[] 变量名=new 数据类型[]{数据1, 数据2, 数据3, ...}
 
 简化格式：数据类型[] 变量名={数据1, 数据2, 数据3, ...}
 
+
+
 ### 6 数组操作的两个常见小问题
 
 - 索引越界：访问了数组中不存在的索引对应的元素，造成索引越界问题
 - 空指针异常：访问的数组已经不再指向堆内存的数据，造成空指针异常
+
+
 
 ### 7 数组常见操作
 
@@ -376,11 +464,15 @@ for (int i = 0; i < arr.length; i++) {
 
 
 
+
+
 ## 第10节 方法
 
 ### 1 方法概述
 
 **方法**（method）是将具有独立功能的代码块组织成为一个整体，使其具有特殊功能的代码集
+
+
 
 ### 2 方法的定义和调用
 
@@ -394,9 +486,13 @@ isEvenNumber();
 //main方法通常位于其他方法的上方
 ```
 
+
+
 ### 3 带参数方法的定义和调用
 
 形参和实参
+
+
 
 ### 4 带返回值方法的定义和调用
 
@@ -409,10 +505,14 @@ public static boolean isEvenNumber(int number) {
 boolean flag = isEvenNumber(5);
 ```
 
+
+
 ### 5 方法的注意事项
 
 - 方法不能嵌套定义
 - `void`表示无返回值，可以省略`return`，也可以单独书写`return`，且后面不加数据
+
+
 
 ### 6 方法重载
 
@@ -447,6 +547,8 @@ public class MethodDemo {
 }
 ```
 
+
+
 ### 7 方法的参数传递
 
 基本数据类型
@@ -459,6 +561,8 @@ public class MethodDemo {
 
 
 
+
+
 ## 第11节 Debug
 
 ### 1 Debug
@@ -467,15 +571,7 @@ public class MethodDemo {
 
 
 
-## 第12节 基础知识练习
-
-### 1 基础知识练习
-
-
-
-
-
-## 第13节 大数
+## 第12节 大数
 
 ### 1 大数
 
@@ -502,6 +598,8 @@ BigInteger和BigDecimal都属于java.math包
 
 
 
+
+
 # 第二部分 类和对象
 
 ## 第1节 面向对象基础
@@ -518,6 +616,8 @@ BigInteger和BigDecimal都属于java.math包
 
 类的组成：**属性**和**行为**
 
+
+
 ### 2 对象内存图
 
 
@@ -527,6 +627,8 @@ BigInteger和BigDecimal都属于java.math包
 成员变量：类中方法外的变量；堆内存；有默认的初始化值
 
 局部变量：方法中的变量；栈内存；没有默认的初始化值
+
+
 
 ### 4 封装
 
@@ -539,6 +641,8 @@ BigInteger和BigDecimal都属于java.math包
 若成员变量和局部变量重名且不使用`this`修饰，则成员变量会被默认为局部变量
 
 面向对象的三大特征：**封装**，**继承**，**多态**
+
+
 
 ### 5 构造方法
 
@@ -572,6 +676,8 @@ public class ClassName {
 
 
 
+
+
 ## 第2节 字符串
 
 ### 1 API
@@ -583,6 +689,8 @@ JDK帮助文档
 `java.lang`不需要导包
 
 从输入读入字符串：`String line = sc.nextLine();`
+
+
 
 ### 2 String
 
@@ -596,7 +704,14 @@ Java程序中所有的双引号字符串，都是String类的对象
 
 String构造方法：
 
-![](Java基础.assets/8.png)
+| 方法名                    | 说明                                      |
+| ------------------------- | ----------------------------------------- |
+| pblic String()            | 创建一个空白字符串对象，不含有任何内容    |
+| public String(char[] chs) | 根据字符数组的内容，来创建字符串对象      |
+| public String(byte[] bys) | 根据字节数组的内容，来创建字符串对象      |
+| String s = "abc";         | 直接赋值的方式创建字符串对象，内容就是abc |
+
+
 
 ```java
 //String的构造方法演示
@@ -627,6 +742,8 @@ for (int i = 0; i < str.length(); i++) {
 ```
 
 `boolean endsWith(String suffix)`测试字符串是否以指定的后缀结尾
+
+
 
 ### 3 StringBuilder
 
@@ -682,6 +799,8 @@ public class StringBuilderReverse {
 ```
 
 `int length()`返回长度
+
+
 
 
 
@@ -928,6 +1047,8 @@ public class StudentManager {
 
 
 
+
+
 # 第三部分 面向对象
 
 ## 第1节 继承
@@ -1044,6 +1165,8 @@ Java编译器支持向上转型，但不支持向下转型
 
 
 
+
+
 ## 第4节 抽象类
 
 ### 1 抽象类
@@ -1073,6 +1196,8 @@ Java编译器支持向上转型，但不支持向下转型
 接口的成员方法默认被`public abstract`修饰
 
 **抽象类**是对**事物**的抽象，**接口**是对**行为**的抽象
+
+
 
 
 
@@ -1147,21 +1272,32 @@ public class OuterDemo {
 
 
 
+
+
 ## 第8节 常用API
 
 ### 1 Math
 
 不需要导包
 
+
+
 ### 2 System
 
 不需要导包
+
+
 
 ### 3 Object
 
 根类（所有类的直接或间接的超类）
 
-![](Java基础.assets/9.png)
+| 方法名                            | 说明                                                       |
+| --------------------------------- | ---------------------------------------------------------- |
+| public String toString()          | 返回对象的字符串表示形式。建议所有子类重写该方法，自动生成 |
+| public boolean equals(Object obj) | 比较对象是否相等。默认比较地址，重写可以比较内容，自动生成 |
+
+
 
 ### 4 Arrays
 
@@ -1171,13 +1307,15 @@ public class OuterDemo {
 
 Arrays类包含各种操作数组的方法
 
-`Arrays.sort()`排序（底层是快速排序+归并排序）
+`Arrays.sort()`排序（底层是**快速排序**+**归并排序**）
 
 `Arrays.toString()`数组转字符串
 
 `Arrays.fill()`填充数组元素为某值
 
 Math、System、Arrays的构造方法都被`private`修饰（防止外界创建对象），成员被`public static`修饰（使用类名访问方法）
+
+
 
 ### 5 基本类型包装类
 
@@ -1201,6 +1339,8 @@ Math、System、Arrays的构造方法都被`private`修饰（防止外界创建�
   2. 自动拆箱+自动装箱：`in += 200`
 
 **只要是对象，在使用前就必须进行不为null的判断**
+
+
 
 ### 6 日期类
 
@@ -1231,6 +1371,8 @@ public class CalendarTest {
 
 
 
+
+
 ## 第9节 异常
 
 ### 1 异常
@@ -1243,7 +1385,7 @@ Error类和Exception类是Throwable类的子类
 
 对于所有检查型异常，编写代码时都必须提前做好应对措施
 
-![](Java基础.assets/10.png)
+![](Java基础.assets/exception-structure.png)
 
 **异常处理方法一：捕获异常**
 
@@ -1334,6 +1476,8 @@ public class /*异常类名*/ extends Exception {
 }
 ```
 
+
+
 ### 2 断言和日志
 
 **断言：**一种测试和调试阶段使用的战术性工具，即向代码中插入一些检查，而在生产代码中会自动删除这些检查
@@ -1341,6 +1485,8 @@ public class /*异常类名*/ extends Exception {
 关键字：`assert`
 
 **日志：**一种在程序整个生命周期都可以使用的战略性工具，日志API
+
+
 
 
 
@@ -1361,6 +1507,8 @@ public static void main(String[] args) {
 }
 ```
 
+
+
 ### 2 枚举类
 
 一个特殊的类
@@ -1376,6 +1524,8 @@ public static void main(String[] args) {
 
 
 
+
+
 # 第四部分 集合
 
 ## 第1节 集合进阶
@@ -1384,15 +1534,30 @@ public static void main(String[] args) {
 
 集合类体系结构：
 
-![](Java基础.assets/11.png)
+![](Java基础.assets/collection.png)
+
+上图中，实线边框的是**实现类**，虚线边框的是**抽象类**，点线边框的是**接口**。
+
+
 
 Collection的常用方法：
 
-![](Java基础.assets/12.png)
+| 方法名                     | 说明                               |
+| -------------------------- | ---------------------------------- |
+| boolean add(E e)           | 添加元素                           |
+| boolean remove(Object o)   | 从集合中移除指定的元素             |
+| void clear()               | 清空集合中的元素                   |
+| boolean contains(Object o) | 判断集合中是否存在指定的元素       |
+| boolean isEmpty()          | 判断集合是否为空                   |
+| int size()                 | 集合的长度，也就是集合中元素的个数 |
+
+
 
 接口`Iterator<T>`迭代器：返回类型为T的迭代器
 
-代码演示
+
+
+代码演示：
 
 ```java
 //Collection集合存储学生对象并遍历
@@ -1441,7 +1606,7 @@ List接口专有的迭代器：`ListIterator<E>`（列表迭代器）
 **增强for循环**：简化数组和Collection集合的遍历
 内部原理是一个Iterator迭代器
 
-增强for循环代码演示
+增强for循环代码演示：
 
 ```java
 import java.util.ArrayList;
@@ -1477,7 +1642,7 @@ public class ForDemo {
 - **数组**：查询快，增删慢；`ArrayList<E>`
 - **链表**：增删快，查询慢；`LinkedList<E>`
 
-LinkedList集合的特有功能代码演示
+LinkedList集合的特有功能代码演示：
 
 ```java
 import java.util.LinkedList;
@@ -1513,11 +1678,9 @@ public class LinkedListDemo {
 **哈希值**：是JDK根据对象的**地址**或者**字符串**或者**数字**算出来的int类型的**数值**
 `public int hashCode()`返回对象的哈希值
 
-HashSet集合添加一个元素的过程：
+HashSet集合存储元素时要保证元素唯一性，需要重写`hashCode()`和`equals()`*（IDEA中可以自动生成）*
 
-![](Java基础.assets/13.png)
-
-从以上过程可以看出，HashSet集合存储元素时要保证元素唯一性，需要重写`hashCode()`和`equals()`*（IDEA中可以自动生成）*
+HashSet基于HashMap实现，底层实际上为(key, Object)类型的HashMap
 
 **哈希表（HashSet）：**
 
@@ -1590,9 +1753,17 @@ TreeSet<Student> ts = new TreeSet<Student>(new Comparator<Student>() {
 
 Map集合的基本功能：
 
-![](Java基础.assets/14.png)
+| 方法名                              | 说明                                 |
+| ----------------------------------- | ------------------------------------ |
+| V put(K key, V value)               | 添加元素                             |
+| V remove(Object key)                | 根据键删除键值对元素                 |
+| void clear()                        | 移除所有的键值对元素                 |
+| boolean containsKey(Object key)     | 判断集合是否包含指定的键             |
+| boolean containsValue(Object value) | 判断集合是否包含指定的值             |
+| boolean isEmpty()                   | 判断集合是否为空                     |
+| int size()                          | 集合的长度，也就是集合中键值对的个数 |
 
-**HashMap**代码演示 
+**HashMap**代码演示：
 
 ```java
 import java.util.HashMap;
@@ -1628,6 +1799,14 @@ public class HashMapDemo {
     }
 }
 ```
+
+
+
+HashMap的put方法底层原理：
+
+![](Java基础.assets/hashmap-put.png)
+
+
 
 **集合嵌套**
 
@@ -1670,7 +1849,7 @@ public class TreeMapDemo {
 
 ### 6 Collections
 
-Collections类是针对集合操作的工具类
+Collections类是针对集合操作的**工具类**
 
 Collections类的常用方法：
 
@@ -1813,7 +1992,7 @@ PriorityQueue的第一个元素默认是指定排序的最小元素（若有多�
 
 PriorityQueue是**非线程安全**的，所以Java提供了PriorityBlockingQueue（实现BlockingQueue接口）用于多线程环境
 
-[源码分析](https://blog.csdn.net/u010623927/article/details/87179364)
+[PriorityQueue源码分析](https://blog.csdn.net/u010623927/article/details/87179364)
 
 
 
@@ -1831,11 +2010,21 @@ File：文件和目录路径名的抽象表示
 
 File类的构造方法：
 
-![](Java基础.assets/15.png)
+| 方法名                            | 说明                                                       |
+| --------------------------------- | ---------------------------------------------------------- |
+| File(String pathname)             | 通过将给定的路径名字符串转换为抽象路径名来创建新的File实例 |
+| File(String parent, String child) | 从父路径名字符串和子路径名字符串创建新的File实例           |
+| File(File parent, String child)   | 从父抽象路径名和子路径名字符串创建新的File实例             |
 
 File类的创建功能：
 
-![](Java基础.assets/16.png)
+| 方法名                         | 说明                                                         |
+| ------------------------------ | ------------------------------------------------------------ |
+| public boolean createNewFile() | 当具有该名称的文件不存在时，创建一个由该抽象路径名命名的新空文件 |
+| public boolean mkdir()         | 创建由此抽象路径名命名的目录                                 |
+| public boolean mkdirs()        | 创建由此抽象路径名命名的目录，包括任何必需但不存在的父目录   |
+
+
 
 ### 2 字节流
 
@@ -1859,7 +2048,7 @@ IO流的分类：
 `finally`在异常处理时提供finally块来执行所有清楚操作
 无论是否发生异常，被finally控制的语句一定会执行，除非JVM退出
 
-字节流写数据与异常处理代码演示
+字节流写数据与异常处理代码演示：
 
 ```java
 import java.io.FileOutputStream;
@@ -1910,7 +2099,7 @@ public class FileInputStreamDemo1 {
 > - Linux: `\n`
 > - Mac: `\r`
 
-字节流复制文本文件代码演示
+字节流复制文本文件代码演示：
 
 ```java
 import java.io.FileInputStream;
@@ -1952,7 +2141,7 @@ public class FileInputStreamDemo2 {
 
 **字节缓冲流**用来提高读写数据的效率
 
-字节缓冲流复制文件代码演示
+字节缓冲流复制文件代码演示：
 
 ```java
 import java.io.*;
@@ -1975,6 +2164,8 @@ public class BufferedStreamDemo {
     }
 }
 ```
+
+
 
 ### 3 字符流
 
@@ -2008,7 +2199,7 @@ Unicode: UTF-8、UTF-16、UTF32
 
 `close()`先刷新流，再关闭流
 
-字符流读写代码演示
+字符流读写代码演示：
 
 ```java
 import java.io.*;
@@ -2041,7 +2232,7 @@ public class CopyCharDemo {
 - BufferedWriter： `void newLine()`写一行行分隔符
 - BufferdReader: `public String readLine()`读一行文字
 
-字符缓冲流代码演示
+字符缓冲流代码演示：
 
 ```java
 import java.io.*;
@@ -2228,7 +2419,7 @@ public class CopyFoldersDemo {
 }
 ```
 
----
+
 
 ### 4 特殊操作流
 
@@ -2255,7 +2446,7 @@ public class CopyFoldersDemo {
 
 Properties是一个Map体系的集合类（HashTable的子类）；Properties可以保存到流中或从流中加载
 
-Properties代码演示
+Properties代码演示：
 
 ```java
 package testpack.io;
@@ -2320,6 +2511,8 @@ public class PropertiesTestDemo {
 
 
 
+
+
 # 第五部分 线程与并发
 
 ## 第1节 多线程
@@ -2370,19 +2563,27 @@ public class PropertiesTestDemo {
 
 线程默认优先级是5；线程优先级的范围是1-10
 
+
+
 **线程控制：**
 
-![](Java基础.assets/17.png)
+| 方法名                         | 说明                                                         |
+| ------------------------------ | ------------------------------------------------------------ |
+| static void sleep(long millis) | 使当前正在执行的线程停留（暂停执行）指定的毫秒数             |
+| void join()                    | 等待这个线程死亡                                             |
+| void setDaemon(boolean on)     | 将此线程标记为守护线程，当运行的线程都是守护线程时，Java虚拟机将退出 |
+
+
 
 **线程生命周期：**
 
-![](Java基础.assets/18.png)
+![](Java基础.assets/thread.png)
 
 ### 2 线程同步
 
 **同步代码块：**
 
-synchronized共享代码块代码演示
+synchronized共享代码块代码演示：
 
 SellTickets.java
 
@@ -2454,11 +2655,17 @@ Lock锁：接口；lock()和unlock()；实现类ReentranLock；通常要结合tr
 
 生产者消费者模式：
 
-![](Java基础.assets/19.png)
+![](Java基础.assets/producer-consumer.png)
 
 Object类的等待和唤醒方法：
 
-![](Java基础.assets/20.png)
+| 方法名           | 说明                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| void wait()      | 导致当前线程等待，直到另一个线程调用该对象的notify()方法或notifyAll()方法 |
+| void notify()    | 唤醒正在等待对象监视器的单个线程                             |
+| void notifyAll() | 唤醒正在等待对象监视器的所有线程                             |
+
+
 
 
 
@@ -2483,7 +2690,13 @@ IP地址分类：
 
 InetAddress类的使用：
 
-![](Java基础.assets/21.png)
+| 方法名                                    | 说明                                                         |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| static InetAddress getByName(String host) | 确定主机名称的IP地址。主机名称可以是机器名称，也可以是IP地址 |
+| String getHostName()                      | 获取此IP地址的主机名                                         |
+| String getHostAddress()                   | 返回文本显示中的IP地址字符串                                 |
+
+
 
 **端口**取值范围：0~65535
 0~1023之间的端口号用于一些知名的网络服务和应用
@@ -2494,13 +2707,15 @@ UDP是无连接通信协议
 **TCP协议**：传输控制协议（Transmission Control Protocol）
 TCP协议是面向连接的通信协议
 
+
+
 **”三次握手“**：TCP协议中，在发送数据的准备阶段，客户端与服务器之间的三次交互，以保证连接的可靠
 
 1. 第一次握手，客户端向服务器端发出连接请求，等待服务器确认
 2. 第二次握手，服务器端向客户端回送一个响应，通知客户端收到了连接请求
 3. 第三次握手，客户端再次向服务器端发送确认信息，确认连接
 
-![](Java基础.assets/22.png)
+
 
 ### 2 UDP通信程序
 
@@ -2540,7 +2755,7 @@ UDP接受数据的步骤：
 4. 解析数据包，并把数据在控制台上显示
 5. 关闭接收端
 
-DUP接收数据代码演示
+UDP接收数据代码演示
 
 ```java
 import java.io.IOException;
@@ -2558,6 +2773,8 @@ public class ReceiveDemo {
     }
 }
 ```
+
+
 
 ### 3 TCP通信程序
 
@@ -2709,6 +2926,8 @@ public class ClientDemo {
 
 
 
+
+
 # 第七部分 函数式编程
 
 ## 第1节 Lambda表达式
@@ -2730,6 +2949,8 @@ Lambda表达式的省略模式
 
 
 
+
+
 ## 第2节 接口组成更新
 
 ### 1 接口组成更新
@@ -2739,6 +2960,8 @@ Lambda表达式的省略模式
 静态方法（Java8）`static`：只能通过接口名调用，不能通过实现类名或者对象名调用
 
 私有方法（Java9）`private`：提供给接口中的默认方法或静态方法调用
+
+
 
 
 
@@ -2763,6 +2986,8 @@ Lambda表达式的省略模式
 
 引用构造器
 如`Student::new`
+
+
 
 
 
@@ -2791,6 +3016,8 @@ Lambda表达式的省略模式
 4. Function接口：两个泛型`<T, R>`；通常用于对参数进行处理，转换后返回一个新的值
    - `apply()`将此函数应用于给定的参数
    - `andThen()`返回一个组合函数
+
+
 
 
 
@@ -2835,6 +3062,8 @@ Stream流的收集方法：
 
 
 
+
+
 # 第八部分 反射
 
 ## 第1节 反射
@@ -2846,6 +3075,8 @@ Stream流的收集方法：
 类加载器对应ClassLoader对象，即负责加载类的对象
 
 System的父加载器为Platform，而Platform的父加载器为Bootstrap（通常表示为null）
+
+
 
 
 
@@ -2907,7 +3138,7 @@ public class ReflectDemo {
 
 程序运行结果：
 
-![](Java基础.assets/23.png)
+![](Java基础.assets/result1.png)
 
 从程序运行结果可以看出：**同一个字节码文件（*.class）在一次程序运行过程中，==只会被加载一次==，不论通过哪一种方式获取的==Class对象都是同一个==**
 
@@ -2953,7 +3184,7 @@ public class ReflectDemo2 {
 
 程序运行结果：
 
-![](Java基础.assets/24.png)
+![](Java基础.assets/result2.png)
 
 
 
@@ -2990,9 +3221,7 @@ public class ReflectDemo3 {
 
 程序运行结果：
 
-![](Java基础.assets/25.png)
-
-
+![](Java基础.assets/result3.png)
 
 
 
@@ -3035,7 +3264,7 @@ public class ReflectDemo4 {
 
 程序运行结果：
 
-![](Java基础.assets/26.png)
+![](Java基础.assets/result4.png)
 
 
 
@@ -3180,7 +3409,7 @@ public class ReflectTest {
 
 程序运行结果：
 
-![](Java基础.assets/27.png)
+![](Java基础.assets/result5.png)
 
 
 
@@ -3283,11 +3512,11 @@ public class CalculatorTest {
 
 Run 'testAdd()'控制台输出：
 
-![](Java基础.assets/28.png)
+![](Java基础.assets/result6.png)
 
 Run 'testSub()'控制台输出：
 
-![](Java基础.assets/29.png)
+![](Java基础.assets/result7.png)
 
 
 

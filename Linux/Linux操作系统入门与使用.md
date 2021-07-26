@@ -1,26 +1,18 @@
 # 第一章 Linux背景介绍
 
-*2020.9.15 课1*
+操作系统结构
 
-操作系统结构：  
-<img src="Linux操作系统入门与使用.assets/1.png" style="zoom:80%;" />
+Linux分支
 
-Linux分支：  
-<img src="Linux操作系统入门与使用.assets/2.png" style="zoom:80%;" />
-
-Linux应用广阔：  
-<img src="Linux操作系统入门与使用.assets/3.png" style="zoom:80%;" />
-
----
-
-*2020.9.17 课2*
+Linux应用广阔
 
 > **不要**忽略屏幕输出，请**仔细看**系统给你的每一句回复。
 
-软件的安装：  
-<img src="Linux操作系统入门与使用.assets/4.png" style="zoom:80%;" />
+软件的安装
 
 源：类似于一个软件管家
+
+
 
 ## Linux常见命令
 
@@ -136,9 +128,11 @@ Linux应用广阔：
 
 
 
-# 第二章 基本概念
 
-*2020.9.19 课3*
+
+
+
+# 第二章 基本概念
 
 ## 文件类型
 
@@ -174,9 +168,11 @@ Linux共有7种文件类型
 
 
 
-# 第三章 命令系统
 
-*2020.9.19 课4*
+
+
+
+# 第三章 命令系统
 
 - shell：一种命令解析器，它给用户提供了一个输入命令并接受机器返回结果的界面
 - console：控制台
@@ -192,6 +188,10 @@ Linux共有7种文件类型
 | [!list]                 | 匹配除list中的任意单一字符               | a[!0-9]b代表a和b之间不能是0-9的数字       |
 | [c1-c2]                 | 匹配c1-c2中的任意单一字符                | a[0-9]b代表a和b之间是0-9的其中一个数字    |
 | {string1, string2, ...} | 匹配string1或string2（或更多）其一字符串 | a{abc, xyz, 123}b 代表aabcb或axyzb或a123b |
+
+
+
+
 
 ## 任务管理
 
@@ -209,6 +209,10 @@ Linux共有7种文件类型
 ls /etc1/ && echo "Success"
 ls /etc1/ || echo "Failed"
 ```
+
+
+
+
 
 ## 管道与重定向
 
@@ -230,17 +234,21 @@ Linux三剑客：`grep`, `sed`, `awk`
 
 
 
-# 第四章 基本系统
 
-*2020.9.22 课5*
+
+
+
+# 第四章 基本系统
 
 ## 系统启动
 
 ### 启动流程
 
-![](Linux操作系统入门与使用.assets/5.png)
+![](Linux操作系统入门与使用.assets/1.png)
 
 开机→BIOS(检查固件是否完好等等)→MBR(读第一个分区)→GRUB(挂载虚拟文件系统)→Linux OS→RAM→/sbin/init(启动第一个进程)→Command Shell using getty→GUI
+
+
 
 ### 运行级别（run level）
 
@@ -255,10 +263,14 @@ Linux三剑客：`grep`, `sed`, `awk`
 **systemd方式**：提供了比UpStart更激进的**并行**启动能力，有**更快**的启动速度。  
 *系统中所有进程都是由systemd进程克隆而来*
 
+
+
 ### 配置文件
 
-全局配置文件  
+全局配置文件
 用户配置文件
+
+
 
 ### 用户系统
 
@@ -268,12 +280,20 @@ Linux三剑客：`grep`, `sed`, `awk`
 - `/etc/gshadow` 群组密码
 - `/etc/sudoers` sudoer列表
 
+
+
+
+
 ## Shell
 
 如bash、zsh等；"sh"代表"shell"  
-`vim .zshrc` 打开zsh的资源文件  
-资源文件里的`source`表示配置环境  
+`vim .zshrc` 打开zsh的资源文件
+资源文件里的`source`表示配置环境
 先读全局配置再读个人配置(personal, individual)
+
+
+
+
 
 ## 软件安装
 
@@ -283,17 +303,21 @@ Linux三剑客：`grep`, `sed`, `awk`
 `sudo apt install xxx` 安装xxx软件  
 `sudo apt remove xxx` 卸载xxx软件
 
+
+
+
+
 ## 基本系统结构
 
 ### 目录结构
 
-> root  
+> root
 > /usr(用户)   /boot(开关机)   /dev(device装置)   /etc(全局目录)   /home(家目录)   /lib(库文件)   /media(媒体)   /mnt(mount挂载)   /opt(空)   /bin(binary可执行程序)   /sbin(system可执行文件)   /srv   /tmp(临时文件夹，用户只能删除自己创建的文件)   /var(动态数据，如日志、html)
 
-挂载点：两个文件树，一个向另一个树挂载文件   
+挂载点：两个文件树，一个向另一个树挂载文件
 挂载相关命令`sshfs`（先安装sshfs）
 
-#### 作业1
+
 
 > 参考系统自带的`cat`实现自己的`cat`命令。  
 >
@@ -382,9 +406,11 @@ int main(int argc, char *argv[]) {
 
 
 
-# 第五章 系统信息的获取
 
-*2020.9.24 课6*
+
+
+
+# 第五章 系统信息的获取
 
 > `w` 打印当前登录用户列表及正在执行的任务  
 > `uname` 打印当前系统信息，加 `-a` 打印全部信息  
@@ -396,6 +422,10 @@ int main(int argc, char *argv[]) {
 > `dstat` 显示cpu、磁盘、网络的即时信息
 
 *注意：命令没必要全部记，运用tab键可以补全命令名称，用`man`或者`tldr`命令可以查看如何使用该命令*
+
+
+
+
 
 
 
@@ -423,13 +453,15 @@ int main(int argc, char *argv[]) {
 
 ## 文件相关命令
 
-*2020.9.26 课7*
-
-光标停在一个函数名上  
-按Ctrl + k 进入ctags查看函数原型  
+光标停在一个函数名上
+按Ctrl + k 进入ctags查看函数原型
 再按Ctrl + o 返回
 
 `int getopt(int argc, char *const argv[], const char *optstring)`函数的optind参数表示下一次运行getopt时将读取数组第optind个
+
+
+
+
 
 ## 文件的特殊权限
 
@@ -444,9 +476,11 @@ int main(int argc, char *argv[]) {
 
 
 
-# 第七章 数据提取操作
 
-*2020.9.26 课8*
+
+
+
+# 第七章 数据提取操作
 
 - `cut`切分
 - `sort`排序
@@ -459,9 +493,11 @@ int main(int argc, char *argv[]) {
 
 
 
-# 第八章 shell编程入门
 
-*2020.9.29 课9*
+
+
+
+# 第八章 shell编程入门
 
 shell脚本的创建
 
@@ -479,7 +515,7 @@ shell命令`a=123`和`a = 123`不一样，后者计算机会把`a`当作一个�
 
 字符串展开
 
-#### 作业2
+
 
 > shell编程：求一定范围内的素数和，采用线性筛实现。  
 >
@@ -566,13 +602,11 @@ echo "$sum"
 
 
 
+
+
+
+
 # 第九章 用户管理与进程管理
-
-*2020.10.10 课10*
-
-
-
-*2020.10.13 课11*
 
 进程管理相关命令：  
 
