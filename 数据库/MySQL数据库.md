@@ -28,6 +28,10 @@ DBMS分为两类：
 
 MySQL的默认端口号是3306
 
+
+
+
+
 ## 2 初始MySQL
 
 ### 启动和停止方法
@@ -73,13 +77,15 @@ root用户可以通过mysql自带的客户端
 
 
 
+
+
 # 第二部分 SQL语言
 
 ## 1 DQL语言
 
 ### 查询
 
-基础查询
+#### 基础查询
 
 ```mysql
 #进阶1：基础查询
@@ -166,7 +172,9 @@ FROM
 	employees;
 ```
 
-条件查询
+
+
+#### 条件查询
 
 ```mysql
 #进阶2：条件查询
@@ -307,7 +315,9 @@ FROM
 WHERE salary <=> 10000 ;
 ```
 
-排序查询
+
+
+#### 排序查询
 
 ```mysql
 #进阶3：排序查询
@@ -351,7 +361,9 @@ FROM employees
 ORDER BY salary ASC, employee_id DESC;
 ```
 
-常见函数之单行函数
+
+
+#### 常见函数之单行函数
 
 ```mysql
 #进阶4：常见函数
@@ -497,7 +509,9 @@ END AS 工资级别
 FROM employees;
 ```
 
-常见函数之分组函数
+
+
+#### 常见函数之分组函数
 
 ```mysql
 #二、分组函数
@@ -552,7 +566,9 @@ SELECT COUNT(1) FROM employees;
 SELECT AVG(salary), employee_id FROM employees;
 ```
 
-分组查询
+
+
+#### 分组查询
 
 ```mysql
 #进阶5：分组查询
@@ -633,7 +649,9 @@ ORDER BY AVG(salary) DESC;
 | 分组前筛选 | where      | 原始表       | group by的前面 |
 | 分组后筛选 | having     | 分组后的结果 | group by的后面 |
 
-连接查询
+
+
+#### 连接查询
 
 ```mysql
 #进阶6：连接查询
