@@ -1218,16 +1218,30 @@ Java编译器支持向上转型，但不支持向下转型
 - 内部类可以直接访问外部类的成员，包括私有
 - 外部类要访问内部类的成员，必须创建对象
 
+属性屏蔽：内部类定义的变量或方法可以覆盖外部类同名变量或方法
+
 外界创建另一个类的`public`型的内部类对象：
 格式：外部类名.内部类名 对象名=外部类对象.内部类对象
 如：`Outer.Inner oi = new Outer().new Inner();`
 
 对于`private`的内部类，可以通过创建对象的方式间接调用
 
+
+
 **局部内部类**：类里的方法中的内部类
+
 调用方式：通过创建对象间接调用
 
-**匿名内部类**是一种特殊的局部内部类，其本质是
+
+
+**匿名内部类**：一种特殊的局部内部类
+
+可用于匿名实现接口、匿名继承父类
+
+匿名内部类只能访问外部类的final变量
+
+- 原因是编译程序实现上的困难：内部类对象的生命周期通常会超过局部变量的生命周期
+- 定义为final后，编译器会把匿名内部类对象要访问的所有final类型局部变量，都拷贝一份作为该对象的成员变量
 
 匿名内部类代码演示
 
@@ -1235,7 +1249,7 @@ Inter.java
 
 ```java
 //接口
-public interface Inter {
+public interface Inner {
     void show();
 }
 ```
@@ -1247,7 +1261,7 @@ Outer.java
 public class Outer {
     public void method() {
         //定义匿名内部类
-    	Inter in = new Inter() {
+    	Inner in = new Inner() {
         	//重写
         	public void show() {
             	System.out.println("匿名内部类");
@@ -2550,6 +2564,7 @@ public class PropertiesTestDemo {
   5. 创建Thread类的对象，把FutureTask对象作为构造方法的参数
   6. 启动线程
   7. 调用FutureTask对象的`get()`方法来获得线程执行结束后的返回值
+- 使用线程池
 
 使用方式二相比方式一的好处：
 
@@ -2578,6 +2593,8 @@ public class PropertiesTestDemo {
 **线程生命周期：**
 
 ![](Java基础.assets/thread.png)
+
+
 
 ### 2 线程同步
 
@@ -2650,6 +2667,8 @@ Collections有可以将ArrayList等线程不安全的集合转为安全的方法
 `List<String> list = Collections.synchronizedList(new ArrayList<String>());`
 
 Lock锁：接口；lock()和unlock()；实现类ReentranLock；通常要结合try..finally..语句
+
+
 
 ### 3 生产者消费者
 
