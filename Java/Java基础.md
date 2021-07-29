@@ -3545,7 +3545,7 @@ Run 'testSub()'控制台输出：
 
 ### 1 模块化
 
-Java9推出模块化系统
+Java 9推出模块化系统
 
 模块的src目录下新建一个名为module-info.java的描述性文件
 
