@@ -460,6 +460,10 @@ Java代码的执行过程：
 
 
 
+图
+
+
+
 对一个类型进行**主动引用**（必须立即初始化）的时机：
 
 1. 遇到new关键字、读取静态字段或静态方法
@@ -593,3 +597,127 @@ final：准备阶段生成ConstaneValue属性，直接赋值
 - 执行接口的\<clinit\>()方法不需要先执行父接口的\<clinit\>()方法
 - JVM必须保证一个类的\<clinit\>()方法多线程环境中被正确地加锁同步，同一时间只会有一个线程去执行这个类的\<clinit\>()方法
 
+
+
+### 3 类加载器
+
+对于任意一个类，都必须由加载它的类加载器和这个类本身一起共同确立其在Java虚拟机中的唯一性
+
+
+
+#### 双亲委派模型
+
+类加载器分为：
+
+- 启动类加载器（Bootstrap ClassLoader）：虚拟机内置，HotSpot中使用C++实现
+- 其他所有的类加载器：虚拟器外部，继承自java.lang.ClassLoader
+
+
+
+**三层类加载器架构**：
+
+1. 启动类加载器（Bootstrap Class Loader）：加载\<JAVA_HOME\>\lib\目录下的类库
+2. 扩展类加载器（Extension Class Loader）：加载\<JAVA_HOME\>\lib\ext\目录下的类库
+3. 应用程序类加载器（Application Class Loader）：加载用户类路径上所有的类库，默认类加载器
+
+
+
+**双亲委派模型**：自定义类加载器 ---> 应用程序类加载器 ---> 扩展类加载器 ---> 启动类加载器
+
+
+
+图
+
+
+
+双亲委派模型的工作过程：
+
+1. 类加载器收到类加载请求
+2. 将请求委派给父类加载器，一层层委派直到最顶层的启动类加载器
+3. 若父类加载器没有找到所需的类，则再由子加载器加载
+
+
+
+查看java.lang.ClassLoader.loadClass的源码：
+
+```java
+protected Class<?> loadClass(String name, boolean resolve)
+        throws ClassNotFoundException
+    {
+        synchronized (getClassLoadingLock(name)) {
+            // 首先，检查请求的类是否已经被加载过了
+            Class<?> c = findLoadedClass(name);
+            if (c == null) {
+                long t0 = System.nanoTime();
+                try {
+                    if (parent != null) {
+                        c = parent.loadClass(name, false);
+                    } else {
+                        c = findBootstrapClassOrNull(name);
+                    }
+                } catch (ClassNotFoundException e) {
+                    // 如果父类加载器抛出ClassNotFoundException
+                    // 说明父类加载器无法完成加载请求
+                }
+
+                if (c == null) {
+                    // 在父类加载器无法加载时
+                    // 再调用本身的findClass方法来进行类加载
+                    long t1 = System.nanoTime();
+                    c = findClass(name);
+
+                    // this is the defining class loader; record the stats
+                    sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);
+                    sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);
+                    sun.misc.PerfCounter.getFindClasses().increment();
+                }
+            }
+            if (resolve) {
+                resolveClass(c);
+            }
+            return c;
+        }
+    }
+```
+
+
+
+双亲委派模型被破坏的情况：
+
+1. JDK1.2之前已有类加载器但还未引入双亲委派模型
+2. 上层的基础加载器需要调取用户代码
+3. 代码热替换和模块热部署
+
+
+
+
+
+### 4 Java模块化系统
+
+Java模块化系统于JDK 9引入
+
+启用模块化进行封装 ---> 模块声明对其他模块的显示依赖 --->JVM**启动时**即验证依赖关系是否完备*（避免了缺少依赖的运行时异常）*
+
+模块化信息：module-info.class文件
+
+
+
+模块分类：
+
+- 匿名模块：所有类路径下的JAR文件等
+- 具名模块：只能访问其以来路径中的模块和包
+- 自动模块：不包含模块定义的JAR文件放置到模块路径后自动生成，默认依赖所有模块
+
+
+
+JDK 9以后的类加载器委派关系：
+
+图
+
+
+
+
+
+
+
+## 第8章 虚拟机字节码执行引擎
