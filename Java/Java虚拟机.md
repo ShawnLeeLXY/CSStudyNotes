@@ -458,9 +458,7 @@ Java代码的执行过程：
 6. **使用**Using
 7. **卸载**Unloading
 
-
-
-图
+![](Java虚拟机.assets/class-life-cycle.png)
 
 
 
@@ -626,7 +624,7 @@ final：准备阶段生成ConstaneValue属性，直接赋值
 
 
 
-图
+![](Java虚拟机.assets/parents-delegation-model.png)
 
 
 
@@ -712,7 +710,7 @@ Java模块化系统于JDK 9引入
 
 JDK 9以后的类加载器委派关系：
 
-图
+![](Java虚拟机.assets/jdk-9-delegation.png)
 
 
 

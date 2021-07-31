@@ -192,6 +192,18 @@ synchronized作用范围：
 
 
 
+synchronized与Lock的不同点：
+
+1. synchronized是内置语言实现的**关键字**，而Lock是一个**接口**
+2. 发生异常时：
+   - synchronized会**自动释放**线程占用的锁
+   - Lock如果没有主动通过unLock()去释放锁，则可能造成死锁现象
+3. Lock可以让等待的锁的线程**响应中断**，而synchronized不行
+4. Lock可以知道**有没有成功获取锁**，而synchronized不行
+5. Lock可以提高多个线程进行**读操作的效率**
+
+
+
 创建多线程的方式：
 
 1. 继承Thread类
@@ -333,3 +345,99 @@ public class SellTicketLock {
 
 <img src="Java并发编程.assets/sell-ticket-2.png" style="zoom:67%;" />
 
+
+
+
+
+## 第3节 线程间通信
+
+Thread的`start()`方法不会立即启动线程，而会先去调用native关键字修饰的`start0()`方法，将控制权交给操作系统，操作系统根据自身此时的资源分配情况决定什么时候启动线程
+
+![](Java并发编程.assets/start0.png)
+
+
+
+带线程间通信的多线程编程步骤：
+
+1. 创建资源类，在资源类创建属性和操作方法
+2. 在资源类操作方法：
+   1. 判断
+   2. 执行
+   3. 通知
+3. 创建多个线程，调用资源类的操作方法
+
+
+
+#### 线程通信案例
+
+> 实现两个线程多一个初始值为0的变量分别+1和-1
+
+syncronized版：
+
+```java
+class Share {
+
+    // 初始值
+    private int number = 0;
+
+    // +1的方法
+    public synchronized void incr() throws InterruptedException {
+        // 判断 若非0则等待 是0则执行操作
+        if (number != 0) {
+            this.wait();
+        }
+        // 执行操作
+        number++;
+        System.out.println(Thread.currentThread().getName() + ": " + number);
+        // 通知其他线程
+        this.notifyAll();
+    }
+
+    // -1的方法
+    public synchronized void decr() throws InterruptedException {
+        if (number != 1) {
+            this.wait();
+        }
+        number--;
+        System.out.println(Thread.currentThread().getName() + ": " + number);
+        this.notifyAll();
+    }
+
+}
+
+public class ThreadDemo1 {
+    // 创建多个线程 调用资源类的操作方法
+    public static void main(String[] args) {
+        Share share = new Share();
+        new Thread(() -> {
+            for (int i = 1; i <= 10; i++) {
+                try {
+                    share.incr();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "thread-A").start();
+        new Thread(() -> {
+            for (int i = 1; i <= 10; i++) {
+                try {
+                    share.decr();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "thread-B").start();
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/itc-syncronized.png" style="zoom:67%;" />
+
+
+
+Lock版
+
+10
