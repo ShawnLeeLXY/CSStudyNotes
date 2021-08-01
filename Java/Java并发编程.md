@@ -351,6 +351,8 @@ public class SellTicketLock {
 
 ## 第3节 线程间通信
 
+### 1 线程间通信
+
 Thread的`start()`方法不会立即启动线程，而会先去调用native关键字修饰的`start0()`方法，将控制权交给操作系统，操作系统根据自身此时的资源分配情况决定什么时候启动线程
 
 ![](Java并发编程.assets/start0.png)
@@ -360,7 +362,7 @@ Thread的`start()`方法不会立即启动线程，而会先去调用native关�
 带线程间通信的多线程编程步骤：
 
 1. 创建资源类，在资源类创建属性和操作方法
-2. 在资源类操作方法：
+2. 在资源类按如下顺序编写操作方法：
    1. 判断
    2. 执行
    3. 通知
@@ -368,9 +370,11 @@ Thread的`start()`方法不会立即启动线程，而会先去调用native关�
 
 
 
-#### 线程通信案例
+### 2 线程通信案例
 
-> 实现两个线程多一个初始值为0的变量分别+1和-1
+#### synchronized版
+
+> 实现两个线程将一个初始值为0的变量分别+1和-1
 
 syncronized版：
 
@@ -438,6 +442,394 @@ public class ThreadDemo1 {
 
 
 
-Lock版
+创建多个线程，判断条件如果仍然用if会导致线程唤醒后不会判断而是继续执行，即所谓“虚假唤醒”
 
-10
+因此需将if改成while
+
+```java
+class Share {
+
+    private int number = 0;
+
+    public synchronized void incr() throws InterruptedException {
+        // if改为while
+        while (number != 0) {
+            this.wait();
+        }
+        number++;
+        System.out.println(Thread.currentThread().getName() + ": " + number);
+        this.notifyAll();
+    }
+
+    public synchronized void decr() throws InterruptedException {
+        // if改为while
+        while (number != 1) {
+            this.wait();
+        }
+        number--;
+        System.out.println(Thread.currentThread().getName() + ": " + number);
+        this.notifyAll();
+    }
+
+}
+```
+
+
+
+#### Lock版
+
+> 实现四个线程将一个初始值为0的变量分别+1和-1
+
+```java
+class Share {
+
+    private int number = 0;
+    private Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+
+    public void incr() throws InterruptedException {
+        lock.lock();
+        try {
+            while (number != 0) {
+                condition.await();
+            }
+            number++;
+            System.out.println(Thread.currentThread().getName() + ": " + number);
+            condition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void decr() throws InterruptedException {
+        lock.lock();
+        try {
+            while (number != 1) {
+                condition.await();
+            }
+            number--;
+            System.out.println(Thread.currentThread().getName() + ": " + number);
+            condition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+}
+
+public class ThreadDemo2 {
+    public static void main(String[] args) {
+        Share share = new Share();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    share.incr();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "thread-A").start();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    share.decr();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "thread-B").start();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    share.incr();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "thread-C").start();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    share.decr();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "thread-D").start();
+    }
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/itc-lock.png" style="zoom:67%;" />
+
+
+
+
+
+## 第4节 线程间定制化通信
+
+### 1 线程间定制化通信
+
+线程间定制化通信：使多个线程按照规定的顺序执行
+
+> 启动三个线程，使第一个线程打印1次，第二个线程打印2次，第三个线程打印3次，如此重复10轮。
+
+代码演示：
+
+```java
+class ShareResource {
+
+    // 定义标志位
+    private int flag = 1;
+    // 创建Lock锁
+    private Lock lock = new ReentrantLock();
+    // 创建三个condition
+    private Condition c1 = lock.newCondition();
+    private Condition c2 = lock.newCondition();
+    private Condition c3 = lock.newCondition();
+
+    // 打印1次，参数第loop轮
+    public void print1(int loop) {
+        lock.lock();
+        try {
+            // 判断
+            while (flag != 1) {
+                // 等待
+                c1.await();
+            }
+            // 执行
+            System.out.println(Thread.currentThread().getName() + ": " + 1 + "，第" + loop + "轮");
+            flag = 2;
+            c2.signal();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            // 释放锁
+            lock.unlock();
+        }
+    }
+
+    public void print2(int loop) {
+        lock.lock();
+        try {
+            while (flag != 2) {
+                c2.await();
+            }
+            for (int i = 1; i <= 2; i++) {
+                System.out.println(Thread.currentThread().getName() + ": " + i + "，第" + loop + "轮");
+            }
+            flag = 3;
+            c3.signal();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void print3(int loop) {
+        lock.lock();
+        try {
+            while (flag != 3) {
+                c3.await();
+            }
+            for (int i = 1; i <= 3; i++) {
+                System.out.println(Thread.currentThread().getName() + ": " + i + "，第" + loop + "轮");
+            }
+            flag = 1;
+            c1.signal();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+}
+
+public class ThreadDemo3 {
+
+    public static void main(String[] args) {
+        ShareResource shareResource = new ShareResource();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                shareResource.print1(i);
+            }
+        }, "thread-A").start();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                shareResource.print2(i);
+            }
+        }, "thread-B").start();
+        new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                shareResource.print3(i);
+            }
+        }, "thread-C").start();
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/itc-customized.png" style="zoom:67%;" />
+
+
+
+
+
+## 第5节 集合的线程安全
+
+### 1 List集合的线程安全
+
+List集合线程不安全代码演示：
+
+```java
+public class ThreadDemo4 {
+
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                list.add(UUID.randomUUID().toString().substring(0, 8));
+                System.out.println(list);
+            }, String.valueOf(i)).start();
+        }
+    }
+
+}
+```
+
+运行后将抛出java.util.ConcurrentModificationException异常，即出现了并发修改问题
+
+
+
+解决方案：
+
+1. 使用Vector类
+   - JDK1.0时就出现的类
+   - Vector类具有与ArrayList基本一致的功能，但在所有可能出现并发问题的方法上都加上了synchronized关键字
+2. 使用Collections工具类
+   - 采用Collections类下的相应方法包装要使用的集合类
+3. 使用JUC中的CopyOnWriteArrayList类
+   - 写时复制技术：写时复制，读写分离
+     - 并发读正常读即可
+     - 独立写时，先复制原集合到一块新的内存空间，往里写，再覆盖或合并原集合
+
+
+
+List集合线程安全代码演示：
+
+```java
+public class ThreadDemo4 {
+
+    public static void main(String[] args) {
+        // 线程不安全
+        //List<String> list = new ArrayList<>();
+
+        // 解决方案一：Vector
+        //List<String> list = new Vector<>();
+
+        // 解决方案二：Collections
+        //List<String> list = Collections.synchronizedList(new ArrayList<>());
+
+        // 解决方案三：CopyOnWriteArrayList
+        List<String> list = new CopyOnWriteArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                list.add(UUID.randomUUID().toString().substring(0, 8));
+                System.out.println(list);
+            }, String.valueOf(i)).start();
+        }
+    }
+
+}
+```
+
+
+
+CopyOnWriteArrayList类add()方法源码：
+
+```java
+/**
+     * Appends the specified element to the end of this list.
+     *
+     * @param e element to be appended to this list
+     * @return {@code true} (as specified by {@link Collection#add})
+     */
+    public boolean add(E e) {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            Object[] elements = getArray();
+            int len = elements.length;
+            Object[] newElements = Arrays.copyOf(elements, len + 1);
+            newElements[len] = e;
+            setArray(newElements);
+            return true;
+        } finally {
+            lock.unlock();
+        }
+    }
+```
+
+
+
+### 2 HashSet和HashMap的线程安全
+
+HashSet和HashMap在前述List集合的多线程条件直接使用，同样可能抛出java.util.ConcurrentModificationException异常
+
+HashSet线程安全解决方案：
+
+- Collections.synchronizedSet(Set s)
+- CopyOnWriteArraySet
+
+```java
+public class ThreadDemo5 {
+
+    public static void main(String[] args) {
+        //Set<String> set = new HashSet<>();
+        Set<String> set = new CopyOnWriteArraySet<>();
+        for (int i = 0; i < 30; i++) {
+            new Thread(() -> {
+                set.add(UUID.randomUUID().toString().substring(0, 8));
+                System.out.println(set);
+            }, String.valueOf(i)).start();
+        }
+    }
+
+}
+```
+
+HashMap线程安全解决方案：
+
+- Hashtable
+- Collections.synchronizedMap(Map m)
+- ConcurrentHashMap
+
+```java
+public class ThreadDemo6 {
+
+    public static void main(String[] args) {
+        //Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new ConcurrentHashMap<>();
+        for (int i = 0; i < 30; i++) {
+            String key = String.valueOf(i);
+            new Thread(() -> {
+                map.put(key, UUID.randomUUID().toString().substring(0, 8));
+                System.out.println(map);
+            }, String.valueOf(i)).start();
+        }
+    }
+
+}
+```
+
+
+
+18
+

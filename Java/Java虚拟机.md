@@ -733,7 +733,7 @@ JDK 9以后的类加载器委派关系：
 
 栈帧的概念结构：
 
-图
+<img src="Java虚拟机.assets/stack-frame.png" style="zoom: 67%;" />
 
 
 
@@ -766,7 +766,7 @@ long和double类型数据通常占2个变量槽（32位Java虚拟机）
 
 两个栈帧之间的数据共享：
 
-图
+<img src="Java虚拟机.assets/stack-frame-share.png" style="zoom:67%;" />
 
 
 
