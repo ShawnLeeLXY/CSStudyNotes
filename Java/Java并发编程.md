@@ -831,5 +831,184 @@ public class ThreadDemo6 {
 
 
 
-18
 
+
+## 第6节 多线程锁
+
+### 1 公平锁
+
+sysnchronized实现同步的基础：Java中的每一个对象都可以作为锁
+
+- 对于非静态同步方法，锁的是`this`，即当前实例对象
+- 对于静态同步方法，锁的是Class字节码对象
+- 对于同步方法块，锁的是synchronized括号里配置的对象
+
+
+
+**非公平锁**：多线程之间竞争非公平，执行效率相对高
+
+`ReentrantLock lock = new ReentrantLock()` 默认为非公平锁
+
+源码中无参构造方法：
+
+```java
+public ReentrantLock() {
+    sync = new NonfairSync();
+}
+```
+
+**公平锁**：多线程之间竞争公平，执行效率相对低
+
+`ReentranLock lock = new ReentrantLock(true)` 创建公平锁
+
+源码中带参构造方法：
+
+```java
+public ReentrantLock(boolean fair) {
+    sync = fair ? new FairSync() : new NonfairSync();
+}
+```
+
+
+
+### 2 可重入锁
+
+**可重入锁**：也叫递归锁，当被加锁的情况下还可以加锁
+
+若有多层嵌套同步方法或代码块，则每一层都是用的同一把锁*（能进最外层则内部所有层都可以随意进入）*
+
+可重入锁代码演示：
+
+```java
+public class SyncLockDemo {
+
+    public synchronized void add() {
+        // 递归调用演示递归锁
+        add();
+    }
+
+    public static void main(String[] args) {
+        // 递归调用会抛出异常java.lang.StackOverflowError
+        //new SyncLockDemo().add();
+
+        // synchronized演示可重入锁
+        Object obj = new Object();
+        new Thread(() -> {
+            synchronized (obj) {
+                System.out.println(Thread.currentThread().getName() + " 外层");
+                synchronized (obj) {
+                    System.out.println(Thread.currentThread().getName() + " 中层");
+                    synchronized (obj) {
+                        System.out.println(Thread.currentThread().getName() + " 内层");
+                    }
+                }
+            }
+        }, "thread-A").start();
+
+        // Lock演示可重入锁
+        Lock lock = new ReentrantLock();
+        new Thread(() -> {
+            try {
+                lock.lock();
+                System.out.println(Thread.currentThread().getName() + " 外层");
+                try {
+                    lock.lock();
+                    System.out.println(Thread.currentThread().getName() + " 中层");
+                    try {
+                        lock.lock();
+                        System.out.println(Thread.currentThread().getName() + " 内层");
+                    } finally {
+                        // 每次上锁必须对应有解锁
+                        lock.unlock();
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            } finally {
+                lock.unlock();
+            }
+        }, "thread-B").start();
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/reentrantlock.png" style="zoom:67%;" />
+
+
+
+### 3 死锁
+
+**死锁**：两个或两个以上进程在执行过程中，因为争夺资源而造成一种互相等待的现象，若无外部介入则无法继续执行
+
+产生死锁的原因：
+
+- 系统资源不足
+- 进程运行推进顺序不合适
+- 资源分配不当
+
+死锁代码演示：
+
+```java
+public class DeadLockDemo {
+
+    static Object a = new Object();
+    static Object b = new Object();
+
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (a) {
+                System.out.println(Thread.currentThread().getName() + "持有锁a，试图获取锁b");
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (b) {
+                    System.out.println(Thread.currentThread().getName() + "获取到锁b");
+                }
+            }
+        }, "thread-a").start();
+
+        new Thread(() -> {
+            synchronized (b) {
+                System.out.println(Thread.currentThread().getName() + "持有锁b，试图获取锁a");
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (a) {
+                    System.out.println(Thread.currentThread().getName() + "获取到锁a");
+                }
+            }
+        }, "thread-b").start();
+    }
+
+}
+```
+
+
+
+验证是否死锁步骤：
+
+1. 控制台输入`jps`命令（类似Linux中`ps -ef`），查看当前进程
+2. 输入`jstack`命令（JVM自带堆栈跟踪工具），若有一个死锁可以看到打印出"Found 1 deadlock."
+
+
+
+
+
+## 第7节 Callable接口
+
+JDK1.5出现
+
+使用Thread类或使用Runnable接口创建线程无法获得线程返回结果，而这一点Callable接口可以实现
+
+Callable接口中只有一个`call()`方法，有返回值；若无法返回结果则抛出异常
+
+使用Callable接口创建线程需要使用实现了Runnable接口的FutureTask类来包装
+
+24
