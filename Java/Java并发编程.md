@@ -709,12 +709,12 @@ public class ThreadDemo4 {
 
 解决方案：
 
-1. 使用Vector类
+- 使用Vector类
    - JDK1.0时就出现的类
    - Vector类具有与ArrayList基本一致的功能，但在所有可能出现并发问题的方法上都加上了synchronized关键字
-2. 使用Collections工具类
+- 使用Collections工具类
    - 采用Collections类下的相应方法包装要使用的集合类
-3. 使用JUC中的CopyOnWriteArrayList类
+- 使用JUC中的CopyOnWriteArrayList类
    - 写时复制技术：写时复制，读写分离
      - 并发读正常读即可
      - 独立写时，先复制原集合到一块新的内存空间，往里写，再覆盖或合并原集合
