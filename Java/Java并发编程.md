@@ -805,6 +805,8 @@ public class ThreadDemo5 {
 }
 ```
 
+
+
 HashMap线程安全解决方案：
 
 - Hashtable
