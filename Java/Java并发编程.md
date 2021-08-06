@@ -1005,6 +1005,8 @@ public class DeadLockDemo {
 
 ## 第7节 Callable接口
 
+### 1 Callable接口
+
 JDK1.5出现
 
 使用Thread类或使用Runnable接口创建线程无法获得线程返回结果，而这一点Callable接口可以实现
@@ -1068,4 +1070,661 @@ public class CallableDemo1 {
 运行结果：
 
 <img src="Java并发编程.assets/callable.png" style="zoom:67%;" />
+
+
+
+
+
+## 第8节 JUC辅助类
+
+### 1 CountDownLatch锁存器
+
+juc包中的一个辅助类，用来计数
+
+使用方式：构造方法 + `await()` 方法 + `countDown()` 方法
+
+`await()` 方法：线程阻塞直到计数器归零
+
+`countDown()` 方法：减少计数器的计数
+
+
+
+CountDownLatch代码演示：
+
+```java
+public class CountDownLatchDemo {
+
+    public static void main(String[] args) throws InterruptedException {
+        // 设置计数器初始值为6
+        CountDownLatch countDownLatch = new CountDownLatch(6);
+
+        for (int i = 1; i <= 6; i++) {
+            new Thread(() -> {
+                System.out.println(Thread.currentThread().getName() + "号同学离开了教室");
+                // 计数-1
+                countDownLatch.countDown();
+            }, String.valueOf(i)).start();
+        }
+        countDownLatch.await();
+        System.out.println("班长锁门走人了");
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/count-down-latch.png" style="zoom:67%;" />
+
+
+
+### 2 CyclicBarrier循环栅栏
+
+juc包中的一个辅助类，用于使一组线程等待彼此都完成某种条件，然后可选执行某个Runnable接口的实现类
+
+使用方式：构造方法 + `await()` 方法
+
+
+
+CyclicBarrier代码演示：
+
+```java
+public class CyclicBarrierDemo {
+
+    private static final int NUMBER = 10;
+
+    public static void main(String[] args) {
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(NUMBER, () ->
+                System.out.println("10个线程都已结束！")
+        );
+        for (int i = 1; i <= 10; i++) {
+            new Thread(() -> {
+                System.out.println(Thread.currentThread().getName() + "号线程结束");
+                try {
+                    cyclicBarrier.await();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, String.valueOf(i)).start();
+        }
+
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/cyclic-barrier.png" style="zoom:67%;" />
+
+
+
+### 3 Semaphore信号量
+
+juc包中的一个辅助类，用于维持一定量的线程许可
+
+使用方式：构造方法设置许可量 + `acquire()` 方法 + `release()` 方法
+
+
+
+Semaphore代码演示：
+
+```java
+/**
+ * 6个线程抢3个执行机会
+ */
+public class SemaphoreDemo {
+
+    public static void main(String[] args) {
+        // 设置许可量为5
+        Semaphore semaphore = new Semaphore(3);
+        for (int i = 1; i <= 6; i++) {
+            new Thread(() -> {
+                try {
+                    // 抢占
+                    semaphore.acquire();
+                    System.out.println(Thread.currentThread().getName() + "抢到了");
+                    TimeUnit.SECONDS.sleep(new Random().nextInt(5));
+                    System.out.println("---" + Thread.currentThread().getName() + "释放了");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    // 释放
+                    semaphore.release();
+                }
+            }, String.valueOf(i)).start();
+        }
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/semaphore.png" style="zoom:67%;" />
+
+
+
+
+
+## 第9节 读写锁
+
+### 1 悲观锁和乐观锁
+
+悲观锁：
+
+- 总是假设最坏的情况，共享资源每次只给一个线程使用，其它线程阻塞，用完后再把资源转让给其它线程
+- 不支持并发，效率低
+
+乐观锁：
+
+- 总是假设最好的情况，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据（比对版本）
+- 支持并发
+
+
+
+表锁：一把锁锁一张表，不会发生死锁
+
+行锁：一把锁锁一行数据，可能发生死锁
+
+
+
+### 2 读写锁
+
+**读写锁**：一个资源可以同时被多个读线程访问，或者可以被一个写线程访问，但是不能同时存在读写线程，即**读写互斥**，**读读共享**
+
+同一个线程可以先获取写锁，再获取读锁，反过来不行（读写互斥）
+
+读写锁的优势：多线程可以同时读
+
+读写锁的缺点：
+
+- 一直读，影响写操作的执行
+- 读的时候不能写
+
+
+
+读锁（共享锁）：
+
+- 同一个资源多个线程共享一把锁
+- 可能发生死锁：线程1修改资源的时候，需要等待线程2读之后，反之亦然，可能互相等待
+
+写锁（排他锁）：
+
+- 对同一个资源只能有一把锁
+
+- 可能发生死锁：线程1操作资源1时申请操作资源2，同时线程2操作2时申请操作资源1，造成互相等待
+
+
+
+juc包中Lock接口的实现类ReentrantReadWriteLock的嵌套类ReentrantReadWriteLock.ReadLock和ReentrantReadWriteLock.WriteLock可用于实现读写锁
+
+
+
+读写锁代码演示：
+
+```java
+class MyCache {
+
+    // 共享map资源 往map里读或写
+    private volatile Map<String, Object> map = new HashMap<>();
+
+    // 初始化读写锁 向上转型
+    private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+    public void put(String key, Object value) {
+        readWriteLock.writeLock().lock();
+        System.out.println(Thread.currentThread().getName() + "正在写" + key);
+        try {
+            TimeUnit.MILLISECONDS.sleep(500);
+            map.put(key, value);
+            System.out.println(Thread.currentThread().getName() + "写完了" + key);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+
+    public Object get(String key) {
+        readWriteLock.readLock().lock();
+        System.out.println(Thread.currentThread().getName() + "正在读" + key);
+        Object res = null;
+        try {
+            TimeUnit.MILLISECONDS.sleep(500);
+            res = map.get(key);
+            System.out.println(Thread.currentThread().getName() + "读完了" + key);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+        return res;
+    }
+
+}
+
+
+public class ReadWriteLockDemo {
+
+    public static void main(String[] args) {
+        MyCache myCache = new MyCache();
+        // 5个线程开始写
+        for (int i = 1; i <= 5; i++) {
+            final String num = String.valueOf(i);
+            new Thread(() -> myCache.put(num, num), String.valueOf(i)).start();
+        }
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // 5个线程开始读
+        for (int i = 1; i <= 5; i++) {
+            final String num = String.valueOf(i);
+            new Thread(() -> System.out.println(myCache.get(num)), String.valueOf(i)).start();
+        }
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/read-write-lock.png" style="zoom:67%;" />
+
+
+
+并发状态：
+
+- 无锁状态：多线程抢夺资源
+- 添加锁：
+  - 使用synchronized或ReentrantLock：都是独占，每次只允许一个线程
+  - 使用读写锁ReentrantReadWriteLock：读读可以共享
+
+
+
+### 3 锁降级
+
+JDK8以后，**写入锁可以降级为读锁**
+
+同一个线程可以先获取写锁，再获取读锁，反过来不行（读写互斥）
+
+写锁降级为读锁过程：获取写锁 ---> 获取读锁 ---> 释放写锁 ---> 释放读锁
+
+
+
+锁降级代码演示：
+
+```java
+public class LockDegrade {
+
+    public static void main(String[] args) {
+        // 创建读写锁对象
+        ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+        ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
+        ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
+
+        // 锁降级
+        writeLock.lock();
+        System.out.println("获取了写锁");
+        readLock.lock();
+        System.out.println("获取了读锁");
+        writeLock.unlock();
+        System.out.println("释放了写锁");
+        readLock.unlock();
+        System.out.println("释放了读锁");
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/lock-degrade.png" style="zoom:67%;" />
+
+
+
+
+
+## 第10节 阻塞队列
+
+### 1 BlockingQueue阻塞队列
+
+阻塞队列是一个多线程共享队列
+
+![](Java并发编程.assets/bloking-queue.jpg)
+
+线程1往里放元素，线程2往外取元素
+
+- 当队列为空时，take操作被阻塞
+- 当队列已满时，put操作被阻塞
+
+
+
+BlockingQueue是juc包中一个接口，继承了Queue接口
+
+BlockingQueue的实现类：
+
+- ArrayBlockingQueue是由**数组**结构组成的**有界**阻塞队列
+- LinkedBlockingQueue是由**链表**结构组成的**有界**阻塞队列
+- DelayQueue是由**优先队列**实现的**延迟无界**阻塞队列
+- PriorityBlockingQueue是支持**优先级排序**的**无界**阻塞队列
+- SynchronousQueue是只存储**单个元素**的阻塞队列
+- LinkedTransferQueue是由**链表**组成的**无界**阻塞队列
+- LinkedBlockingDeque是由**链表**组成的**双向**阻塞队列
+
+
+
+阻塞队列代码演示：
+
+```java
+public class BlockingQueueDemo {
+
+    public static void main(String[] args) throws InterruptedException {
+        // 创建一个定长的阻塞队列
+        BlockingQueue<String> blockingQueue = new ArrayBlockingQueue<>(3);
+
+        blockingQueue.put("a");
+        blockingQueue.put("b");
+        blockingQueue.put("c");
+        // 再put线程就会阻塞
+        //blockingQueue.put("d");
+
+        System.out.println(blockingQueue.take());
+        System.out.println(blockingQueue.take());
+        System.out.println(blockingQueue.take());
+        // 再take线程就会阻塞
+        //System.out.println(blockingQueue.take());
+
+        System.out.println(blockingQueue.offer("a"));
+        System.out.println(blockingQueue.offer("b"));
+        System.out.println(blockingQueue.offer("c"));
+        // offer和poll方法都可以设置超时时间
+        // 阻塞超过3s则自动结束线程
+        System.out.println(blockingQueue.offer("d", 3L, TimeUnit.SECONDS));
+    }
+
+}
+```
+
+
+
+
+
+## 第11节 线程池
+
+### 1 ThreadPool线程池
+
+线程池维护着多个线程，一定程度上避免了重复创建和销毁线程的代价
+
+线程池的优势：
+
+- 降低资源的消耗
+- 提高响应速度
+- 提高线程的可管理性
+
+
+
+Java中的线程池通过Executor体系实现，包括Executors工具类
+
+![](Java并发编程.assets/execotor.jpg)
+
+
+
+### 2 线程池的使用方式
+
+线程池的使用方式：
+
+1. Executors.newFixedThreadPool(int n)：一池N线程
+2. Executors.newSingleThreadExecutor()：一池一线程
+3. Executors.newCachedThreadPool()：可扩容
+
+代码演示：
+
+```java
+public class ThreadPoolDemo1 {
+
+    public static void main(String[] args) {
+        // 1池5线程
+        ExecutorService threadPool1 = Executors.newFixedThreadPool(5);
+        // 10个业务
+        for (int i = 1; i <= 10; i++) {
+            threadPool1.execute(() -> System.out.println(Thread.currentThread().getName() + "正在处理业务..."));
+        }
+        // 关闭线程池 但是既不会强行终止正在执行的任务 也不会取消已经提交的任务
+        threadPool1.shutdown();
+
+        // 1池1线程
+        ExecutorService threadPool2 = Executors.newSingleThreadExecutor();
+        for (int i = 1; i <= 10; i++) {
+            threadPool2.execute(() -> System.out.println(Thread.currentThread().getName() + "正在处理业务..."));
+        }
+        threadPool2.shutdown();
+
+        // 可扩容线程池
+        ExecutorService threadPool3 = Executors.newCachedThreadPool();
+        for (int i = 1; i <= 10; i++) {
+            threadPool3.execute(() -> System.out.println(Thread.currentThread().getName() + "正在处理业务..."));
+        }
+        threadPool3.shutdown();
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/thread-pool.png" style="zoom:67%;" />
+
+
+
+### 3 线程池底层原理
+
+Executors的 `newFixedThreadPool(int n)`、`newSingleThreadExecutor()`、`newCachedThreadPool()` 底层都new了一个ThreadPoolExecutor类，作为执行操作的实体
+
+ThreadPoolExecutor的构造方法最多有7个参数，源码：
+
+```java
+public ThreadPoolExecutor(int corePoolSize,//核心（常驻）线程数量
+                              int maximumPoolSize,//最大线程数量
+                              long keepAliveTime,//线程存活时间
+                              TimeUnit unit,//存活时间单位
+                              BlockingQueue<Runnable> workQueue,//阻塞队列 线程数量不够处理请求时将请求放入队列
+                              ThreadFactory threadFactory,//线程工厂 用于创建线程
+                              RejectedExecutionHandler handler) {//拒绝策略处理器
+        if (corePoolSize < 0 ||
+            maximumPoolSize <= 0 ||
+            maximumPoolSize < corePoolSize ||
+            keepAliveTime < 0)
+            throw new IllegalArgumentException();
+        if (workQueue == null || threadFactory == null || handler == null)
+            throw new NullPointerException();
+        this.acc = System.getSecurityManager() == null ?
+                null :
+                AccessController.getContext();
+        this.corePoolSize = corePoolSize;
+        this.maximumPoolSize = maximumPoolSize;
+        this.workQueue = workQueue;
+        this.keepAliveTime = unit.toNanos(keepAliveTime);
+        this.threadFactory = threadFactory;
+        this.handler = handler;
+    }
+```
+
+
+
+主线程在调用 `execute()` 方法时线程才被创建
+
+
+
+线程池底层创建线程的执行流程：
+
+![](Java并发编程.assets/thread-pool-flow.png)
+
+
+
+JDK内置的拒绝策略：
+
+- AbortPolicy：抛出异常
+- DiscardPolicy：丢弃无法处理的任务
+- CallerRunsPolicy：将任务回退到调用者
+- DiscardOldestPolicy：抛弃队列中等待最久的任务，然后将当前任务加入队列中
+
+
+
+### 4 自定义线程池
+
+自定义线程池在实际中更常用
+
+自定义线程池代码演示：
+
+```java
+public class ThreadPoolDemo2 {
+
+    public static void main(String[] args) {
+        ExecutorService threadPool = new ThreadPoolExecutor(2, 5, 2L,
+                TimeUnit.SECONDS, new ArrayBlockingQueue<>(3), Executors.defaultThreadFactory(),
+                new ThreadPoolExecutor.AbortPolicy());
+        for (int i = 1; i <= 10; i++) {
+            threadPool.execute(() -> System.out.println(Thread.currentThread().getName() + "正在处理业务..."));
+        }
+        threadPool.shutdown();
+    }
+
+}
+```
+
+运行后会抛出RejectedExecutionException异常
+
+
+
+
+
+## 第12节 分支合并框架
+
+### 1 Fork/Join分支合并框架
+
+Fork/Join可以将一个大的任务拆分成多个子任务进行并行处理，最后将子任务结果合并成最后的计算结果，并进行输出
+
+Fork：拆分
+
+Join：合并
+
+
+
+Fork/Join分支合并代码演示：
+
+```java
+class MyTask extends RecursiveTask<Integer> {
+
+    // 拆分差值不能超过10
+    private static final int VALUE = 10;
+    // 拆分开始值
+    private int begin;
+    // 拆分结束值
+    private int end;
+
+    public MyTask(int begin, int end) {
+        this.begin = begin;
+        this.end = end;
+    }
+
+    // 拆分与合并过程
+    @Override
+    protected Integer compute() {
+        int res = 0;
+        if (end - begin <= VALUE) {
+            for (int i = begin; i <= end; i++) {
+                res += i;
+            }
+        } else {
+            // 获取中间值
+            int mid = (begin + end) / 2;
+            // 拆分左边
+            MyTask taskLeft = new MyTask(begin, mid);
+            // 拆分右边
+            MyTask taskRight = new MyTask(mid + 1, end);
+            taskLeft.fork();
+            taskRight.fork();
+            // 合并结果
+            res = taskLeft.join() + taskRight.join();
+        }
+        return res;
+    }
+}
+
+
+public class ForkJoinDemo {
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        // 创建MyTask对象
+        MyTask myTask = new MyTask(0, 100);
+        // 创建分支合并池对象
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        ForkJoinTask<Integer> forkJoinTask = forkJoinPool.submit(myTask);
+        // 获取最终合并之后的结果
+        Integer res = forkJoinTask.get();
+        System.out.println(res);
+        // 关闭池对象
+        forkJoinPool.shutdown();
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/fork-join.png" style="zoom:67%;" />
+
+
+
+
+
+## 第13节 调用机制
+
+### 1 CompletableFuture
+
+模块之间总是存在着一定数量的接口，从调用方式上看，可以分为三类：**同步调用**、**回调**和**异步调用**：
+
+- 同步调用是一种**阻塞式**调用，一段代码调用另一端代码时，必须等待这段代码执行结束并返回结果后，代码才能继续执行下去
+- 回调是一种**双向**的调用模式，也就是说，被调用的接口被调用时也会调用对方的接口
+- 异步调用是一种**非阻塞式**调用，一段异步代码还未执行完，可以继续执行下一段代码逻辑，当代码执行完以后，通过回调函数返回继续执行相应的逻辑，而不耽误其他代码的执行
+
+
+
+<img src="Java并发编程.assets/call-back.png" style="zoom:67%;" />
+
+
+
+CompletableFuture实现同步调用和异步调用代码演示：
+
+```java
+public class CompletableFutureDemo {
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        // 同步调用
+        CompletableFuture<Void> completableFuture1 = CompletableFuture.runAsync(() ->
+                System.out.println(Thread.currentThread().getName() + ": CompletableFuture1"));
+        completableFuture1.get();
+
+        // 异步调用
+        CompletableFuture<Integer> completableFuture2 = CompletableFuture.supplyAsync(() -> {
+            System.out.println(Thread.currentThread().getName() + ": CompletableFuture2");
+            return 666;
+        });
+        completableFuture2.whenComplete((t, u) -> {
+            System.out.println("t = " + t);//t为返回值
+            System.out.println("u = " + u);//u为异常信息
+        }).get();
+    }
+
+}
+```
+
+运行结果：
+
+<img src="Java并发编程.assets/completable.png" style="zoom:67%;" />
 
