@@ -150,11 +150,13 @@ public enum State {
 wait：
 
 - wait是Object类的方法，所以任何对象实例都能调用
+- 可选设置等待时间
 - wait会释放锁
 
 sleep：
 
 - sleep是Thread类的静态方法
+- 必须设置等待时间
 - sleep不会释放锁，也不需要占用锁
 
 wait()和sleep()都可以被Thread类的interrupt()方法中断
@@ -1606,6 +1608,8 @@ public class ThreadPoolDemo2 {
 ## 第12节 分支合并框架
 
 ### 1 Fork/Join分支合并框架
+
+ForkJoinPool于JDK7中加入
 
 Fork/Join可以将一个大的任务拆分成多个子任务进行并行处理，最后将子任务结果合并成最后的计算结果，并进行输出
 
