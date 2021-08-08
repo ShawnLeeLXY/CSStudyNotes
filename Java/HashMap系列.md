@@ -40,7 +40,7 @@ HashMap的源码中，充斥个各种位运算代替常规运算的地方，以�
 
 HashMap的存储结构：
 
-![](D:\MyData\lixy425\Desktop\CSStudyNotes\Java\HashMap系列,assets\hashmap-structure.png)
+<img src="HashMap系列.assets/hashmap-structure.png" style="zoom: 80%;" />
 
 
 
