@@ -8,13 +8,13 @@ HashMap是一个关联数组、哈希表
 
 继承了AbstractMap抽象类，实现了Map、Cloneable、Serializeble接口
 
-线程不安全
+线程不安全（准确地说是线程兼容）
 
 允许一个key为null，多个vaule为null
 
 
 
-HashMap的底层数据结构是数组，称为**哈希桶**
+HashMap的底层数据结构是**数组**，称为哈希桶
 
 ```java
 // transient用于取消序列化
@@ -23,13 +23,33 @@ transient Node<K,V>[] table;
 
 每个桶里面存放的是**链表**，链表中的每个节点 `Node` 就是哈希表中的每个元素
 
-JDK 8之后在链表节点超过8是会将链表转化成红黑树，使用 `TreeNode` 作为红黑树的节点
+JDK 8之后在链表节点超过8是会将链表转化成**红黑树**，使用 `TreeNode` 作为红黑树的节点
 
 
 
 当HashMap的容量达到`threshold`阈值时，就会触发扩容
 
 扩容前后，哈希桶的长度一定会是2的幂
+
+
+
+HashMap中使用transient关键字的作用：
+
+1. transient 是表明该数据不参与序列化。因为 HashMap 中的存储数据的数组数据成员中，数组还有很多的空间没有被使用，没有被使用到的空间被序列化没有意义。所以需要手动使用 `writeObject()` 方法，只序列化实际存储元素的数组
+2. 由于不同的虚拟机对于相同hashCode产生的Code值可能是不一样的，如果你使用默认的序列化，那么反序列化后，元素的位置和之前的是保持一致的，可是由于hashCode的值不一样了，那么定位的元素下标就会不同，这样不是我们所想要的结果
+
+
+
+HashMap在JDK 7和JDK 8之间的变化：
+
+- JDK 7中采用数组+链表，JDK 8采用的是数组+链表/红黑树，即链表长度超过一定长度后就改成红黑树存储
+- JDK 7扩容时需要重新计算哈希值和索引位置，JDK 8并不重新计算哈希值，巧妙地采用和扩容后容量进行&操作来计算新的索引位置
+- JDK 7是采用表头插入法插入链表，JDK 8采用的是尾部插入法
+- 在JDK 7中采用表头插入法，在扩容时会改变链表中元素原本的顺序，以至于在并发场景下导致链表成环的问题；在JDK 8中采用尾部插入法，在扩容时会保持链表元素原本的顺序，就不会出现链表成环的问题了
+
+
+
+HashMap的 `hashCode()` 和 `equals()` 方法都被重写了
 
 
 
@@ -71,9 +91,9 @@ HashMap的字段：
 | table                    | Node数组，即表                  | Yes   | Yes   |
 | entrySet                 | 键值对对象Map.Entry的Set        | Yes   | Yes   |
 | size                     | 此map保存的键值对数量           | Yes   | Yes   |
-| loadFactor               | 加载因子，与扩容有关            | Yes   | Yes   |
-| threshold                | 阈值，table元素数达到后触发扩容 | Yes   | Yes   |
 | modCount                 | HashMap结构改变次数的统计       | Yes   | Yes   |
+| threshold                | 阈值，table元素数达到后触发扩容 | Yes   | Yes   |
+| loadFactor               | 加载因子，与扩容有关            | Yes   | Yes   |
 
 
 
@@ -92,7 +112,7 @@ key的hash值，并不仅仅只是key对象的`hashCode()`方法的返回值，�
 ```java
 static final int hash(Object key) {
     int h;
-    // 小于2的16次方的值的hashCode都是其本身
+    // 小于2的16次方的hashCode都是其本身
     return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
 }
 ```
@@ -101,7 +121,7 @@ static final int hash(Object key) {
 
 
 
-### 4 链表节点Node
+### 4 链表节点
 
 #### Node
 
@@ -709,6 +729,81 @@ JDK 8新增的方法
 
 
 
+### 10 键值对对象
+
+#### entrySet
+
+键值对对象在HashMap中以Set形式保存为entrySet
+
+```java
+transient Set<Map.Entry<K,V>> entrySet;
+
+public Set<Map.Entry<K,V>> entrySet() {
+        Set<Map.Entry<K,V>> es;
+        return (es = entrySet) == null ? (entrySet = new EntrySet()) : es;
+    }
+```
+
+
+
+#### EntrySet
+
+`entrySet()` 在entrySet为null时会调用 `EntrySet()` 构造方法，从而对嵌套类EntrySet初始化一个实例对象
+
+EntrySet也是JDK 7及之前版本HashMap所采用的链表节点类
+
+```java
+final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        public final int size()                 { return size; }
+        public final void clear()               { HashMap.this.clear(); }
+        // EntrySet迭代器 按table索引和链表顺序迭代
+    	public final Iterator<Map.Entry<K,V>> iterator() {
+            return new EntryIterator();
+        }
+    	// 传入EntrySet对象 判断是否包含对应的key
+        public final boolean contains(Object o) {
+            if (!(o instanceof Map.Entry))
+                return false;
+            Map.Entry<?,?> e = (Map.Entry<?,?>) o;
+            Object key = e.getKey();
+            // 调用getNode方法查找key
+            Node<K,V> candidate = getNode(hash(key), key);
+            return candidate != null && candidate.equals(e);
+        }
+    	// 传入EntrySet对象 调用了removeNode方法来删除节点
+        public final boolean remove(Object o) {
+            if (o instanceof Map.Entry) {
+                Map.Entry<?,?> e = (Map.Entry<?,?>) o;
+                Object key = e.getKey();
+                Object value = e.getValue();
+                return removeNode(hash(key), key, value, true, true) != null;
+            }
+            return false;
+        }
+        public final Spliterator<Map.Entry<K,V>> spliterator() {
+            return new EntrySpliterator<>(HashMap.this, 0, -1, 0, 0);
+        }
+        public final void forEach(Consumer<? super Map.Entry<K,V>> action) {
+            Node<K,V>[] tab;
+            if (action == null)
+                throw new NullPointerException();
+            if (size > 0 && (tab = table) != null) {
+                int mc = modCount;
+                for (int i = 0; i < tab.length; ++i) {
+                    for (Node<K,V> e = tab[i]; e != null; e = e.next)
+                        action.accept(e);
+                }
+                if (modCount != mc)
+                    throw new ConcurrentModificationException();
+            }
+        }
+    }
+```
+
+
+
+
+
 
 
 ## 第2节 Hashtable
@@ -745,6 +840,85 @@ HashMap的三个空方法被LinkedHashMap重写了，包括 `afterNodeAccess()` 
 
 ## 第4节 TreeMap
 
+TreeMap基于红黑树实现，以Entry类作为节点，没有调优选项，总是处于平衡排序状态
+
+HashMap中的红黑树节点类为TreeNode，这跟TreeMap使用Entry是不同的
+
+```java
+static final class Entry<K,V> implements Map.Entry<K,V> {
+        K key;//键
+        V value;//值
+        Entry<K,V> left;//左子节点
+        Entry<K,V> right;//右子节点
+        Entry<K,V> parent;//父节点
+        boolean color = BLACK;//默认颜色为黑色
+
+        Entry(K key, V value, Entry<K,V> parent) {
+            this.key = key;
+            this.value = value;
+            this.parent = parent;
+        }
+
+        public K getKey() {
+            return key;
+        }
+
+        public V getValue() {
+            return value;
+        }
+
+        public V setValue(V value) {
+            V oldValue = this.value;
+            this.value = value;
+            return oldValue;
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof Map.Entry))
+                return false;
+            Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+
+            return valEquals(key,e.getKey()) && valEquals(value,e.getValue());
+        }
+
+        public int hashCode() {
+            int keyHash = (key==null ? 0 : key.hashCode());
+            int valueHash = (value==null ? 0 : value.hashCode());
+            return keyHash ^ valueHash;
+        }
+
+        public String toString() {
+            return key + "=" + value;
+        }
+    }
+```
+
+
+
+HashMap的数据结构有范围，TreeMap没有范围控制
+
+
+
+TreeMap的key不能为null，value可以为null
+
+
+
+HashMap直接实现了Map接口，而TreeMap实现了NavigableMap接口，NavigableMap继承自SortedMap，SortedMap继承自Map
+
+
+
+TreeMap可以实现两种排序：
+
+- 自然排序
+  - 无参构造方法默认采用自然排序
+  - key类需要实现Comparable接口
+  - 要指定排序方式，需要在key类中重写 `compareTo()`
+  - String类的 `compareTo()` 基于字典序排序
+- 比较器排序
+  - 传入比较器的构造方法可构建出采用比较器排序的TreeMap
+  - 需要在比较器中实现Comparator接口
+  - 重写 `compare()` 方法，实现对key的比较
+
 
 
 
@@ -753,6 +927,34 @@ HashMap的三个空方法被LinkedHashMap重写了，包括 `afterNodeAccess()` 
 
 ## 第5节 ConcurrentHashMap
 
+ConcurrentHashMap来自java.util.concurrent包，是线程安全版的HashMap，且性能比Hashtable高，使用方式跟HashMap基本一致
+
+ConcurrentHashMap的key和value都不能为null，否则会抛出NullPointerException异常
+
+
+
+[详解ConcurrentHashMap及JDK8的优化](https://blog.csdn.net/y277an/article/details/95041965)
+
+
+
+ConcurrentHashMap在JDK 7版本采用ReentrantLock+Segment+HashEntry
+
+分段锁技术：将整个数据结构分段（默认为16段）进行存储，然后给每一段数据配一把锁（继承ReentrantLock），当一个线程占用锁访问其中一个段的数据的时候，其他段的数据仍然能被其他线程访问，能够实现真正的并发访问
+
+高效且能减小锁的粒度
+
+JDK 7中ConcurrentHashMap的结构：
+
+![](HashMap系列.assets/concurrenthashmap-jdk-7.png)
+
+
+
+ConcurrentHashMap在JDK 8版本中采用synchronized（写）+CAS（读）+HashEntry+红黑树
+
+Node的val和value变量都加上了volatile关键字修饰，目的是在多线程环境下线程A修改结点的val或者新增节点的时候是对线程B可见的
+
+原来是对需要进行数据操作的Segment加锁，JDK8调整为对每个数组元素加锁（Node）
+
 
 
 
@@ -760,3 +962,44 @@ HashMap的三个空方法被LinkedHashMap重写了，包括 `afterNodeAccess()` 
 
 
 ## 第6节 HashSet
+
+HashSet基于HashMap实现，底层实际上为(key, Object)类型的HashMap
+
+
+
+`PRESENT` 常量：
+
+```java
+private static final Object PRESENT = new Object();
+```
+
+
+
+构造方法：
+
+```java
+public HashSet() {
+        map = new HashMap<>();
+    }
+```
+
+
+
+添加元素：
+
+```java
+public boolean add(E e) {
+        return map.put(e, PRESENT)==null;
+    }
+```
+
+
+
+删除元素：
+
+```java
+public boolean remove(Object o) {
+        return map.remove(o)==PRESENT;
+    }
+```
+
