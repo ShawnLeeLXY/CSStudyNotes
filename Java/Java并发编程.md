@@ -12,7 +12,7 @@ JUC是java.util.concurrent工具包的简称，一个用来处理线程的工具
 
 **进程**（process）：计算机中程序关于某数据集合上的一次运行活动
 
-- **进程是系统进行资源分配和调度的最小单位**
+- **进程是系统进行资源分配的基本单位**
 - 进程是操作系统结构的基础
 - 进程是程序在内存中的镜像
 - 进程是线程的容器
@@ -20,7 +20,7 @@ JUC是java.util.concurrent工具包的简称，一个用来处理线程的工具
 
 **线程**（thread）：进程中的单个顺序控制流，是一条执行路径
 
-- **线程是操作系统调度器可调度的最小执行单元**
+- **线程是系统资源调度和执行的基本单位**
 - 进程的实际运作单位
 - 一个进程至少包含一个线程，一个进程的多个线程共享内存空间
 
@@ -1184,7 +1184,7 @@ Semaphore代码演示：
 public class SemaphoreDemo {
 
     public static void main(String[] args) {
-        // 设置许可量为5
+        // 设置许可量为3
         Semaphore semaphore = new Semaphore(3);
         for (int i = 1; i <= 6; i++) {
             new Thread(() -> {
