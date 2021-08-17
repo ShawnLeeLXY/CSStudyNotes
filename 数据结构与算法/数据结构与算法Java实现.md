@@ -2,7 +2,41 @@
 
 ## 排序算法
 
+### 插入排序
+
+**插入排序**是一种**稳定排序**
+
+基本思想：将一个元素插入一个有序数组中，使之成为更长的有序数组
+
+```java
+class Solution {
+    public int[] sortArray(int[] nums) {
+        insertionSort(nums);
+        return nums;
+    }
+
+    private void insertionSort(int[] nums) {
+        int n = nums.length;
+        for (int i = 1; i < n; i++) {
+            int temp = nums[i];
+            int j = i;
+            while (j > 0 && nums[j - 1] > temp) {
+                nums[j] = nums[j - 1];
+                j--;
+            }
+            nums[j] = temp;
+        }
+    }
+}
+```
+
+
+
+
+
 ### 快速排序
+
+**快速排序**是一种**不稳定排序**
 
 挖坑填数+分治法（边分边治）
 
