@@ -37,7 +37,7 @@
 - 运行时常量池：
   - 加载Class文件中的常量池表（包含各种字面量与符号引用）
   - 动态性：运行期间也可以将新的常量放入池中
-  - Byte、Short、Integer、Long、Character这5种整型的包装类在对应值小于等于127并且大于等于-128时会使用常量池
+  - Byte、Short、Integer、Long、Character这5种整型的包装类在对应值大于等于-128并且小于等于127时会将值存入常量池
 - 无法满足新的内存分配需求：OutOfMemoryError
 
 **直接内存：**
@@ -77,11 +77,11 @@
 
 - 使用**句柄**访问（句柄池，实例池）
 
-![](Java虚拟机.assets/1.png)
+<img src="Java虚拟机.assets/1.png" style="zoom: 67%;" />
 
 - 使用**直接指针**访问
 
-![](Java虚拟机.assets/2.png)
+<img src="Java虚拟机.assets/2.png" style="zoom: 67%;" />
 
 
 
@@ -536,7 +536,7 @@ Java代码的执行过程：
 
 非final：此时只是开辟了内存空间，但由于Java方法还未执行，故并未赋值
 
-final：准备阶段生成ConstaneValue属性，直接赋值
+final：准备阶段生成ConstantValue属性，直接赋值
 
 
 
