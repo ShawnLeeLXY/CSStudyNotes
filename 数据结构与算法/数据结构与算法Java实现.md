@@ -264,9 +264,9 @@ public class UnionFind {
 
 路径压缩（path compression）优化：在find时将查找过的路径压缩到长度为1，即所有非根节点都与根节点直接相连
 
-find：$O(logN)$​
+find：$O(\alpha(N))$~$O(logN)$​
 
-union：$O(logN)$
+union：$O(\alpha(N))$~$O(logN)$
 
 路径压缩优化代码：
 
@@ -301,4 +301,17 @@ public class UnionFind {
     }
 }
 ```
+
+
+
+并查集在各种情况下的时间复杂度：
+
+| 优化                | 平均时间复杂度 | 最坏时间复杂度 |
+| ------------------- | -------------- | -------------- |
+| 无优化              | $O(logN)$      | $O(N)$         |
+| 按秩合并            | $O(logN)$      | $O(logN)$      |
+| 路径压缩            | $O(\alpha(N))$ | $O(logN)$      |
+| 按秩合并 + 路径压缩 | $O(\alpha(N))$ | $O(\alpha(N))$ |
+
+其中$\alpha(x)$为反阿克曼函数，在人类可观测的N内（宇宙中粒子总数），$\alpha(x)$不会超过5
 
