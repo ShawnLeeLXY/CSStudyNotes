@@ -29,7 +29,15 @@ JDK 8之后在链表节点超过8是会将链表转化成**红黑树**，使用 
 
 当HashMap的容量达到`threshold`阈值时，就会触发扩容
 
-扩容前后，哈希桶的长度一定会是2的幂
+扩容前后，哈希桶的长度一定会是2的幂，这样做的好处：
+
+1. 提高计算效率：%运算替换为&运算
+2. 减少hash碰撞：位置计算最后一位可为奇数也可为偶数
+3. 提高扩容性能：只需多一位参与位运算
+
+具体原因可以参考：
+
+[通俗易懂HashMap为何喜欢2的倍数扩容](https://blog.csdn.net/weixin_41955327/article/details/105285996)
 
 
 
@@ -284,6 +292,10 @@ final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
 因为扩容是容量翻倍，所以原链表上的每个节点，现在可能存放在**原来的索引**（low位）或者**扩容后的索引**（high位）的位置
 
 high位 = low位 + 原table容量
+
+节点位置变更这点可以参考：
+
+[Hashmap实现原理及扩容机制详解](https://blog.csdn.net/lkforce/article/details/89521318)
 
 
 

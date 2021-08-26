@@ -49,7 +49,7 @@ Redis默认有16个库（索引0~15）
 
 Redis的数据结构：key+value
 
-key都是字符串
+**key都是字符串**
 
 key可以为null
 
@@ -584,3 +584,137 @@ public void testTransactional() {
 
 ![](Redis.assets/RedisTransactional.png)
 
+
+
+
+
+
+
+## 第4节 Redis数据结构
+
+### 1 string字符串
+
+常用命令： set、get、decr、incr、mget 等
+
+string是redis中最常用的数据类型，字符串对象的编码有三种，分别是：**int**、**raw**、**embstr**
+
+Redis是用C语言开发的，但是底层存储不是使用C语言的字符串类型，而是自己开发了一种数据类型**SDS**进行存储，SDS即Simple Dynamic String，是一种**动态字符串**，可以在github找到源码
+
+```c
+struct sdshdr{
+    int len;//字符串长度
+    int free;//未使用的字节长度
+    char buf[];//保存字符串的字节数组 
+}
+```
+
+
+
+SDS与C语言字符串的区别：
+
+- 字符串长度：C语言获取字符串长度需要遍历，SDS直接使用 `len` 属性记录长度
+- 避免缓冲区溢出：扩容
+- 空间预分配：`free` 属性记录多余空间
+- 惰性释放：缩容后 `free` 属性记录剩余空间
+- 二进制安全：C语言字符串末尾有'\0'
+
+
+
+Redis规定字符串长度不得超过512MB
+
+
+
+
+
+### 2 hash字典
+
+常用命令：hget、hset、hgetall 等
+
+哈希对象的编码有两种，分别是：**ziplist**、**hashtable**
+
+当哈希对象保存的键值对数量小于 512，并且所有键值对的长度都小于64字节时，使用 ziplist(压缩列表) 存储；否则使用 hashtable 存储
+
+Redis中的hashtable跟Java中的HashMap类似，都是通过"数组+链表"的实现方式解决部分的哈希冲突
+
+
+
+扩容：扩容为2倍
+
+收缩：收缩为一半
+
+扩容或收缩都是渐进式rehash：
+
+- 在rehash时，会使用rehashidx字段保存**迁移的进度**，rehashidx为0表示迁移开始
+- 在迁移过程中**ht[0]**和**ht[1]**会同时保存数据，ht[0]指向旧哈希表，ht[1]指向新哈希表，每次对字典执行添加、删除、查找或者更新操作时，程序除了执行指定的操作以外，还会顺带将ht[0]的元素迁移到ht[1]中
+- 随着字典操作的不断执行，最终会在某个时间节点，ht[0]的所有键值都会被迁移到ht[1]中，rehashidx设置为-1，代表迁移完成。如果没有执行字典操作，redis也会通过定时任务去判断rehash是否完成，没有完成则继续rehash
+- rehash完成后，ht[0]指向的旧表会被释放，之后会将新表的持有权转交给ht[0]，再重置ht[1]指向NULL
+
+
+
+
+
+### 3 list链表
+
+常用命令：lpush、rpush、lpop、rpop、lrange 等
+
+链表对象的编码有两种，分别是：**ziplist**、**linkedlist**
+
+当列表的长度小于512，并且所有元素的长度都小于64字节时，使用 ziplist 存储；否则使用 linkedlist 存储（规则类似于hash）
+
+Redis中的list类似于Java中的LinkedList，是一个链表，底层的实现原理也和LinkedList类似。这意味着list的插入和删除操作效率会比较快，时间复杂度是O(1)
+
+
+
+
+
+### 4 set集合
+
+常用命令：sadd、spop、smembers、sunion 等
+
+set类型的特点很简单，无序，不重复，跟Java的HashSet类似
+
+set的编码有两种，分别是**intset**和**hashtable**
+
+如果value可以转成整数值，并且长度不超过512的话就使用intset存储，否则采用hashtable
+
+set采用hashtable编码的话，其value都是NULL（类比HashSet和HashMap）
+
+inset源码：
+
+```c
+typedef struct intset{
+    uint32_t encoding;//编码方式
+
+    uint32_t length;//集合包含的元素数量
+
+    int8_t contents[];//保存元素的数组
+}intset;
+```
+
+
+
+encoding有三种，分别是INTSET_ENC_INT16、INSET_ENC_INT32、INSET_ENC_INT64，代表着整数值的取值范围。Redis会根据添加进来的元素的大小，选择不同的类型进行存储，可以尽可能地节省内存空间
+
+encoding类型升级过程：
+
+1. 根据新元素的大小扩展数组contents的空间
+2. 从尾部将该元素插入
+3. 根据新的encoding格式重置之前的值，因为这时的contents存在着两种编码的值。从插入的数据的位置，也就是尾部，**从后到前**将之前的数据按照新的编码格式进行移动和设置。从后到前调整是为了防止数据被覆盖
+
+*encoding升级是不可逆的*
+
+
+
+
+
+### 5 zset有序集合
+
+常用命令：zadd、zrange、zrem、zcard 等
+
+zset有序集合和set一样，元素不可重复，但区别在于多了score值，用来代表排序的权重
+
+zset的编码有两种，分别是：**ziplist**、**skiplist**
+
+当 zset 的长度小于128，并且所有元素的长度都小于64字节时，使用 ziplist 存储；否则使用 skiplist（跳跃表） 存储
+
+skiplist增删改查的时间复杂度为$O(logN)$，类似于二分查找
