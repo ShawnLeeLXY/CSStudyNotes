@@ -315,3 +315,207 @@ public class UnionFind {
 
 其中$\alpha(x)$为反阿克曼函数，在人类可观测的N内（宇宙中粒子总数），$\alpha(x)$不会超过5
 
+
+
+
+
+
+
+## 最小生成树相关算法
+
+基本概念：
+
+**生成树**：无向图中，具有该图的**全部顶点**且**边数最少**的连通子图
+
+**最小生成树**：加权无向图中**总权值最小**的生成树
+
+**切分**：将图切为两个部分
+
+**横切边**：如果一条边连接的两个顶点属于切分的两个部分，这个边称为**横切边**
+
+**切分定理**：在一幅连通加权无向图中，给定任意的**切分**，如果有一条**横切边**的权值严格小于所有其他横切边，则这条边必然属于图的**最小生成树**中的一条边
+
+
+
+### Kruskal算法
+
+**Kruskal算法**是求解加权无向图的最小生成树的一种算法
+
+步骤：
+
+1. 所有边**从小到大**排序
+2. 依次加入最小生成树中，**形成环则跳过**（可以用并查集判断是否成环）
+3. 直到选择出 **N-1** 条边为止（顶点数为N）
+
+用到了贪心的思想
+
+时间复杂度：$O(ElogE)$
+
+空间复杂度：$O(V)$
+
+
+
+演示代码：
+
+```java
+/**
+ * LeetCode第1584题 连接所有点的最小费用
+ */
+class Solution {
+
+    class UnionFind {
+
+        private int[] lead;
+        private int[] height;
+
+        public UnionFind(int n) {
+            lead = new int[n];
+            height = new int[n];
+            for (int i = 0; i < n; i++) {
+                lead[i] = i;
+                height[i] = 1;
+            }
+        }
+
+        public int find(int x) {
+            if (x == lead[x]) return x;
+            return find(lead[x]);
+        }
+
+        public void union(int x, int y) {
+            int leadX = find(x);
+            int leadY = find(y);
+            if (height[leadX] > height[leadY]) {
+                lead[leadY] = leadX;
+            } else if (height[leadX] < height[leadY]) {
+                lead[leadX] = leadY;
+            } else {
+                lead[leadY] = leadX;
+                height[leadX]++;
+            }
+        }
+
+        public boolean isConnected(int x, int y) {
+            return find(x) == find(y);
+        }
+
+    }
+
+    public int minCostConnectPoints(int[][] points) {
+        int n = points.length;
+        if (n <= 1) return 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> x[2] - y[2]);
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                int cost = Math.abs(points[i][0] - points[j][0]) + Math.abs(points[i][1] - points[j][1]);
+                pq.add(new int[]{i, j, cost});
+            }
+        }
+        UnionFind unionFind = new UnionFind(n);
+        int res = 0, cnt = 0;
+        while (cnt < n - 1) {
+            int[] edge = pq.poll();
+            if (!unionFind.isConnected(edge[0], edge[1])) {
+                unionFind.union(edge[0], edge[1]);
+                res += edge[2];
+                cnt++;
+            }
+        }
+        return res;
+    }
+
+}
+```
+
+
+
+
+
+### Prim算法
+
+**Prim算法**是求解加权无向图的最小生成树的另一种算法
+
+步骤：
+
+1. 创建一个数组visied，**已访问过**的顶点位置为true，**未访问过**的顶点位置为false，再随机选取一个顶点使其在visited中对应位置为true
+2. 将visited的所有顶点看成一个**整体**，选取所有与其相连的边中**权值最小**的一条边，将该边的另一个顶点在visited中对应的位置设为true
+3. 重复步骤3，直到visited中为true的元素数量为 **N**（或连接次数为N-1）
+
+用到了贪心的思想和切分定理
+
+时间复杂度：
+
+- 普通二叉堆：$O(ElogV)$
+- 斐波那契堆：$O(E+VlogV)$
+
+空间复杂度：$O(V)$
+
+
+
+代码演示：
+
+```java
+/**
+ * LeetCode第1584题 连接所有点的最小费用
+ */
+class Solution {
+
+    public int minCostConnectPoints(int[][] points) {
+        int n = points.length;
+        if (n <= 1) return 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> x[2] - y[2]);
+        boolean[] visited = new boolean[n];
+        visited[0] = true;
+        for (int i = 1; i < n; i++) {
+            int cost = Math.abs(points[0][0] - points[i][0]) + Math.abs(points[0][1] - points[i][1]);
+            pq.add(new int[]{0, i, cost});
+        }
+        int res = 0, cnt = 0;
+        while (cnt < n - 1) {
+            int[] edge = pq.poll();
+            if (!visited[edge[1]]) {
+                visited[edge[1]] = true;
+                res += edge[2];
+                for (int i = 0; i < n; i++) {
+                    if (visited[i]) continue;
+                    int cost = Math.abs(points[edge[1]][0] - points[i][0]) + Math.abs(points[edge[1]][1] - points[i][1]);
+                    pq.add(new int[]{edge[1], i, cost});
+                }
+                cnt++;
+            }
+        }
+        return res;
+    }
+
+}
+```
+
+
+
+
+
+
+
+## 单源最短路径相关算法
+
+**单源最短路径**：在加权图中，给定一个起点，求出它分别到其他顶点的最短路径
+
+**松弛操作**：用起点到节点A的最短路长度加上从节点A到节点B的边的长度，去比较起点到节点B的最短路长度，如果前者小于后者，就用前者更新后者
+
+
+
+### Dijkstra算法
+
+**Dijkstra算法**解决的是加权有向图**单源最短路径**问题，其中该图的所有权重必须为**非负数**
+
+步骤：
+
+1. 将所有节点分成两类：**已确定**从起点到当前点的最短路长度的节点，以及**未确定**从起点到当前点的最短路长度的节点
+2. 每次从**未确定节点**中取一个与起点距离最短的点，将它归类为**已确定节点**，并用它对从起点到其他所有**未确定节点**的做**松弛操作**
+3. 重复步骤2直到所有点都被归类为**已确定节点**
+
+用了贪心思想
+
+时间复杂度：斐波那契最小堆 $O(E+VlogV)$
+
+空间复杂度：$O(V)$
