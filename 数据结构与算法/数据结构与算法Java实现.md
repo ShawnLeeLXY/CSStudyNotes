@@ -452,6 +452,13 @@ class Solution {
 
 
 
+Kruskal算法和Prim算法的区别：
+
+- Kruskal算法是通过增加边数来扩大最小生成树
+- Prim算法是通过增加顶点来扩大最小生成树
+
+
+
 代码演示：
 
 ```java
@@ -506,16 +513,233 @@ class Solution {
 
 ### Dijkstra算法
 
-**Dijkstra算法**解决的是加权有向图**单源最短路径**问题，其中该图的所有权重必须为**非负数**
+**Dijkstra算法**解决的是加权有向图**单源最短路径**问题，其中该图的所有权值必须为**非负数**
 
 步骤：
 
-1. 将所有节点分成两类：**已确定**从起点到当前点的最短路长度的节点，以及**未确定**从起点到当前点的最短路长度的节点
-2. 每次从**未确定节点**中取一个与起点距离最短的点，将它归类为**已确定节点**，并用它对从起点到其他所有**未确定节点**的做**松弛操作**
-3. 重复步骤2直到所有点都被归类为**已确定节点**
+1. 将所有顶点分成两类：**已确定**从起点到当前点的最短路长度的顶点，以及**未确定**从起点到当前点的最短路长度的顶点
+2. 每次从**未确定顶点**中取一个与起点**距离最短的点**，将它归类为**已确定顶点**，并用它对从起点到其他所有**未确定顶点**的做**松弛操作**
+3. 重复步骤2直到所有点都被归类为**已确定顶点**
 
 用了贪心思想
 
 时间复杂度：斐波那契最小堆 $O(E+VlogV)$
 
 空间复杂度：$O(V)$
+
+
+
+代码演示：
+
+```java
+/**
+ * LeetCode第743题 网络延迟时间
+ */
+class Solution {
+
+    public int networkDelayTime(int[][] times, int n, int k) {
+        final int INF = Integer.MAX_VALUE / 2;
+        int[][] graph = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(graph[i], INF);
+        }
+        for (int[] time : times) {
+            graph[time[0] - 1][time[1] - 1] = time[2];
+        }
+        // dist用于记录与起点的距离
+        int[] dist = new int[n];
+        Arrays.fill(dist, INF);
+        dist[k - 1] = 0;
+        boolean[] certain = new boolean[n];
+        for (int i = 0; i < n; i++) {
+            // 从未确定顶点中找距离起点最短的点
+            int x = -1;
+            for (int j = 0; j < n; j++) {
+                if (!certain[j] && (x == -1 || dist[j] < dist[x])) {
+                    x = j;
+                }
+            }
+            // 将该点归类为已确定
+            certain[x] = true;
+            // 松弛操作
+            for (int j = 0; j < n; j++) {
+                dist[j] = Math.min(dist[j], dist[x] + graph[x][j]);
+            }
+        }
+        int maxTime = Arrays.stream(dist).max().getAsInt();
+        return maxTime == INF ? -1 : maxTime;
+    }
+
+}
+```
+
+
+
+
+
+### Bellman-Ford算法
+
+Bellman-Ford算法可用于解决加权有向图**单源最短路径**问题，其中该图的所有权值**可正可负**，且能检测该图是否存在**负权环**
+
+负权环图：所有边的权值加起来为负数的环图
+
+
+
+定理一：在一个有 **N** 个顶点的**非负权环图**中，两点之间的最短路径最多经过 **N-1** 条边
+
+定理二：**负权环图**没有最短路径
+
+
+
+Bellman-Ford算法主要思想：对一个无负权环的图，利用**动态规划**对所有边进行 N-1 次的松弛操作之后，就可以得到一个起点到所有其他顶点的最短距离
+
+使用二维数组存储到达u点最多经过k条边的最短路径
+
+状态转移方程：$dp[k][u]=min(dp[k][u],dp[k-1][v]+w(u,v))$
+
+二维数组可以用**滚动数组**优化为：
+
+- 两个数组，一个保存上次计算结果，一个保存本次计算结果
+- 一个数组，循环N-1次退出（可能无法给出准确的k条边的最短路径，k < n）
+
+在进行第N次松弛操作后，如果对于一条边edge(u, v)还存在 $dp[u] + w(u, v) < dp[v]$ 的情况，说明还存在更短的路径，也就说明图中存在**负权环**
+
+时间复杂度：$O(VE)$
+
+空间复杂度：$O(V)$
+
+
+
+Dijkstra算法和Bellman-Ford算法的相同点：
+
+- 都可用于求非负权值图的单源最短路径
+- 都通过循环不断地做松弛操作来更新数组
+
+不同点：
+
+- Dijkstra算法不能求非负权值图的单源最短路径
+- Dijkstra算法通过对距离排序，每次获取距离最短的点来做松弛操作
+- Bellman-Ford算法通过动态规划依次遍历边来做松弛操作
+
+
+
+代码演示：
+
+```java
+/**
+ * LeetCode第787题 K站中转内最便宜的航班
+ */
+class Solution {
+
+    private static final int INF = Integer.MAX_VALUE / 2;
+
+    public int findCheapestPrice(int n, int[][] flights, int src, int dst, int k) {
+        int[] preDp = new int[n];
+        int[] curDp = new int[n];
+        Arrays.fill(preDp, INF);
+        Arrays.fill(curDp, INF);
+        preDp[src] = 0;
+        for (int i = 1; i <= k + 1; i++) {
+            curDp[src] = 0;
+            for (int[] flight : flights) {
+                curDp[flight[1]] = Math.min(curDp[flight[1]], preDp[flight[0]] + flight[2]);
+            }
+            preDp = curDp.clone();
+        }
+        return curDp[dst] == INF ? -1 : curDp[dst];
+    }
+
+}
+```
+
+
+
+Bellman-Ford算法的缺陷：不同的遍历边的顺序计算效率不同
+
+
+
+#### SPFA算法
+
+SPFA（Shortest Path Faster Algorithm）算法是对Bellman-Ford算法的优化，弥补了不同的遍历边的顺序计算效率不同的缺陷
+
+SPFA算法主要是通过**队列**来维护接下来要遍历边的起点，每次只有当某个顶点的最短距离更新之后，并且该顶点不在队列中，那么就将该顶点加入到队列中。一直循环以上步骤，直到**队列为空**，我们就可以终止算法。此时，就得到了图中其他顶点到给定顶点的最短距离
+
+
+
+
+
+
+
+## 拓扑排序
+
+**拓扑排序**使用于解决**有向无环图**的一种算法，它是对图中所有顶点按照先后顺序的一种线性排序
+
+拓扑排序通常可以用**深度优先搜索**或**Khan算法**实现
+
+
+
+### Khan算法
+
+拓扑排序通常需要借助**队列**存储入度为0的元素
+
+步骤：
+
+1. 遍历所有顶点，找到第一个入度为0的顶点，将其加入队列
+2. 队首元素出队，标记为已访问，将该顶点指向的所有顶点入度-1，将其中入度变为0的顶点加入队列
+3. 重复步骤2直到所有元素都已被访问过
+
+如果最后不存在入度为0的顶点，那就说明有环，不存在拓扑排序
+
+时间复杂度：$O(V+E)$
+
+空间复杂度：$O(V+E)$
+
+
+
+代码演示：
+
+```java
+/**
+ * LeetCode第210题 课程表 II
+ */
+class Solution {
+
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
+        if (numCourses == 0) return new int[0];
+        if (prerequisites == null || prerequisites.length == 0) {
+            int[] order = new int[numCourses];
+            for (int i = 0; i < numCourses; i++) {
+                order[i] = i;
+            }
+            return order;
+        }
+        int[] inDegree = new int[numCourses];
+        for (int[] pre : prerequisites) {
+            inDegree[pre[0]]++;
+        }
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegree[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        int ind = 0;
+        int[] res = new int[numCourses];
+        while (!queue.isEmpty()) {
+            int x = queue.poll();
+            res[ind++] = x;
+            for (int[] pre : prerequisites) {
+                if (pre[1] == x) {
+                    if ((--inDegree[pre[0]]) == 0) {
+                        queue.offer(pre[0]);
+                    }
+                }
+            }
+        }
+        if (ind != numCourses) return new int[0];
+        return res;
+    }
+
+}
+```
+
