@@ -17,7 +17,7 @@ Redis将所有的数据都存放在**内存**中，所以读写性能非常高
 
 Redis可以将内存中的数据以**快照**或**日志**的形式保存到硬盘上（持久化）
 
-应用场景：缓存、排行榜、计数器、社交网络、消息队列等
+应用场景：缓存、计数器、查找表、消息队列、分布式锁实现、排行榜、社交网络等
 
 
 
@@ -137,11 +137,11 @@ Redis是一个内存数据库，可以将Redis内存中的数据持久化保存�
 
 Redis持久化机制：
 
-1. RDB：在一定的间隔时间中，检测key的变化情况，然后持久化数据
+1. RDB：在一定的间隔时间中，检测key的变化情况，满足触发条件则创建快照，快照可以在本地持久化，也可以复制道其他服务器上
 
    *快照的形式，不需要进行配置，默认就使用这种机制*
 
-2. AOF：每一次命令操作后即持久化数据（增量存）
+2. AOF：将写命令添加到内存缓存中，然后再根据配置决定何时将其同步到硬盘中的 AOF 文件（Append Only File）的末尾
 
    *日志记录的方式，可以记录每一条命令的操作*
 
@@ -149,6 +149,18 @@ Redis持久化机制：
 
 1. 修改配置文件redis.windows.conf
 2. 使用命令行重新启动redis服务器，并指定配置文件名称
+
+
+
+
+
+### 6 事件
+
+Redis服务器是一个事件驱动程序
+
+服务器运行流程：
+
+<img src="Redis.assets/redis-cycle.png" style="zoom: 80%;" />
 
 
 
@@ -592,13 +604,29 @@ public void testTransactional() {
 
 ## 第4节 Redis数据结构
 
+Redis的这些数据结构，在底层都是使用 **redisObject** 来进行表示，通常为 16 字节
+
+redisObject中有三个重要的属性，分别是：
+
+- **type**：value的数据类型
+- **encoding**：编码方式
+- **ptr**：指针，指向value的内存区域
+
+
+
 ### 1 string字符串
 
 常用命令： set、get、decr、incr、mget 等
 
 string是redis中最常用的数据类型，字符串对象的编码有三种，分别是：**int**、**raw**、**embstr**
 
-Redis是用C语言开发的，但是底层存储不是使用C语言的字符串类型，而是自己开发了一种数据类型**SDS**进行存储，SDS即Simple Dynamic String，是一种**动态字符串**，可以在github找到源码
+string编码方式的选择：
+
+- 整数值，编码为int，存储 8 个字节的 long 整型
+- 字符串值，并且这个字符串值的长度小于等于 44 字节，编码为embstr
+- 字符串值 并且这个字符串值的长度大于 44 字节，编码为raw，采用 SDS 来保存这个字符串值
+
+Redis是用 C 语言开发的，但是底层存储不是使用C语言的字符串类型，而是自己开发了一种数据类型 **SDS** 进行存储，SDS 即 Simple Dynamic String，是一种**动态字符串**，可以在 github 找到源码
 
 ```c
 struct sdshdr{
@@ -610,13 +638,13 @@ struct sdshdr{
 
 
 
-SDS与C语言字符串的区别：
+SDS 与 C 语言字符串的区别：
 
-- 字符串长度：C语言获取字符串长度需要遍历，SDS直接使用 `len` 属性记录长度
+- 字符串长度：C 语言获取字符串长度需要遍历，SDS 直接使用 `len` 属性记录长度
 - 避免缓冲区溢出：扩容
 - 空间预分配：`free` 属性记录多余空间
 - 惰性释放：缩容后 `free` 属性记录剩余空间
-- 二进制安全：C语言字符串末尾有'\0'
+- 二进制安全：C 语言字符串末尾有'\0'
 
 
 
@@ -630,11 +658,17 @@ Redis规定字符串长度不得超过512MB
 
 常用命令：hget、hset、hgetall 等
 
+hash 是一个 string 类型的 field 和 value 的映射表
+
 哈希对象的编码有两种，分别是：**ziplist**、**hashtable**
 
 当哈希对象保存的键值对数量小于 512，并且所有键值对的长度都小于64字节时，使用 ziplist(压缩列表) 存储；否则使用 hashtable 存储
 
 Redis中的hashtable跟Java中的HashMap类似，都是通过"数组+链表"的实现方式解决部分的哈希冲突
+
+Redis的字典dict中包含两个哈希表dictht，主要是为了便于进行rehash操作
+
+![](Redis.assets/redis-hash.png)
 
 
 
@@ -642,12 +676,56 @@ Redis中的hashtable跟Java中的HashMap类似，都是通过"数组+链表"的�
 
 收缩：收缩为一半
 
-扩容或收缩都是渐进式rehash：
+扩容或收缩都是**渐进式rehash**：
 
-- 在rehash时，会使用rehashidx字段保存**迁移的进度**，rehashidx为0表示迁移开始
-- 在迁移过程中**ht[0]**和**ht[1]**会同时保存数据，ht[0]指向旧哈希表，ht[1]指向新哈希表，每次对字典执行添加、删除、查找或者更新操作时，程序除了执行指定的操作以外，还会顺带将ht[0]的元素迁移到ht[1]中
-- 随着字典操作的不断执行，最终会在某个时间节点，ht[0]的所有键值都会被迁移到ht[1]中，rehashidx设置为-1，代表迁移完成。如果没有执行字典操作，redis也会通过定时任务去判断rehash是否完成，没有完成则继续rehash
+- 在rehash时，会使用**rehashidx**字段保存**迁移的进度**，rehashidx为0表示迁移开始
+- 在迁移过程中**ht[0]**和**ht[1]**会同时保存数据，ht[0]指向旧哈希表，ht[1]指向新哈希表，**每次对字典执行增删改查操作时，程序都会顺带将ht[0]的元素迁移到ht[1]中**
+- 随着字典操作的不断执行，最终会在某个时间节点，ht[0]的所有键值都会被迁移到ht[1]中，rehashidx设置为-1，代表迁移完成。如果没有执行字典操作，redis也会通过**定时任务**去判断rehash是否完成，没有完成则继续rehash
 - rehash完成后，ht[0]指向的旧表会被释放，之后会将新表的持有权转交给ht[0]，再重置ht[1]指向NULL
+
+
+
+源码：
+
+哈希表dictht：
+
+```java
+/* This is our hash table structure. Every dictionary has two of this as we
+ * implement incremental rehashing, for the old to the new table. */
+typedef struct dictht {
+    dictEntry **table;
+    unsigned long size;
+    unsigned long sizemask;
+    unsigned long used;
+} dictht;
+```
+
+哈希节点dictEntry：
+
+```java
+typedef struct dictEntry {
+    void *key;
+    union {
+        void *val;
+        uint64_t u64;
+        int64_t s64;
+        double d;
+    } v;
+    struct dictEntry *next;
+} dictEntry;
+```
+
+hash主结构dict：
+
+```java
+typedef struct dict {
+    dictType *type;
+    void *privdata;
+    dictht ht[2];
+    long rehashidx; /* rehashing not in progress if rehashidx == -1 */
+    unsigned long iterators; /* number of iterators currently running */
+} dict;
+```
 
 
 
@@ -671,7 +749,9 @@ Redis中的list类似于Java中的LinkedList，是一个链表，底层的实现
 
 常用命令：sadd、spop、smembers、sunion 等
 
-set类型的特点很简单，无序，不重复，跟Java的HashSet类似
+set类型的特点是**无序**、**不重复**，跟Java的HashSet类似
+
+set可以实现**交集**、**并集**等操作，从而实现共同好友等功能
 
 set的编码有两种，分别是**intset**和**hashtable**
 
@@ -717,4 +797,10 @@ zset的编码有两种，分别是：**ziplist**、**skiplist**
 
 当 zset 的长度小于128，并且所有元素的长度都小于64字节时，使用 ziplist 存储；否则使用 skiplist（跳跃表） 存储
 
+skiplist是基于多指针有序链表实现的，可以看成多个有序链表
+
+在查找时，从上层指针开始查找，找到对应的区间之后再到下一层去查找
+
 skiplist增删改查的时间复杂度为$O(logN)$，类似于二分查找
+
+![](Redis.assets/redis-skiplist.png)
