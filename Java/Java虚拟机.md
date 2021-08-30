@@ -536,7 +536,7 @@ Java代码的执行过程：
 
 非final：此时只是开辟了内存空间，但由于Java方法还未执行，故并未赋值
 
-final：准备阶段生成ConstantValue属性，直接赋值
+final：如果有赋值，准备阶段根据编译时生成的ConstantValue属性，直接赋值；如果final变量是在构造器中赋值的，则在初始化阶段赋值
 
 
 

@@ -26,6 +26,26 @@ JUC是java.util.concurrent工具包的简称，一个用来处理线程的工具
 
 
 
+线程共享的资源：
+
+1. 进程代码段
+2. 堆
+3. 全局变量
+4. 静态变量
+5. 进程打开的文件描述符
+6. 动态链接库
+7. 信号的处理器
+8. 进程的当前目录
+9. 进程用户ID与进程组ID
+
+线程私有资源：
+
+1. 线程的栈区
+2. 程序计数器
+3. 线程运行时使用的寄存器信息
+
+
+
 **管程**（Monitor）：监视器，即锁
 
 管程一种同步机制，保证同一个时间，只有一个线程访问被保护的数据或者代码
@@ -1737,4 +1757,20 @@ public class CompletableFutureDemo {
 运行结果：
 
 <img src="Java并发编程.assets/completable.png" style="zoom:67%;" />
+
+
+
+
+
+## 第14节 线程间变量的共享和独享
+
+### 1 volatile
+
+Java中，如果一个变量要被多线程访问，可以使用volatile关键字将它声明为“易变的”
+
+
+
+### 2 ThreadLocal
+
+[Java是如何通过ThreadLocal类来实现变量的线程独享](https://blog.csdn.net/calm_encode/article/details/108608919)
 
