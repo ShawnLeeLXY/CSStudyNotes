@@ -1772,5 +1772,151 @@ Java中，如果一个变量要被多线程访问，可以使用volatile关键�
 
 ### 2 ThreadLocal
 
-[Java是如何通过ThreadLocal类来实现变量的线程独享](https://blog.csdn.net/calm_encode/article/details/108608919)
+#### 源码分析
 
+ThreadLocal的作用主要是做**数据隔离**，填充的数据只属于当前线程，变量的数据对别的线程而言是相对隔离的，在多线程环境下，防止本线程的变量被其它线程篡改
+
+**整体结构**：每个 Thread 对象 ---> 一个 ThreadLocalMap 对象(ThreadLocal 对象 - value)
+
+ThreadLocal类即充当了创建ThreadLocalMap对象的工具类，也作为ThreadLocalMap中的key来获取独享资源
+
+ThreadLocalMap类的内部是一个Entry数组
+
+**设置线程独享资源**：创建ThreadLocal 对象，调用 `set()` 方法设置独享value，第一次程序会为当前线程生成一个ThreadLocalMap对象并设置相应节点；此后每次需要设置更多独享资源，则需创建更多ThreadLocal对象作为key去设置 k - v 对
+
+**获取线程独享资源**：只需调用相应ThreadLocal对象的 `get()` 方法即可
+
+
+
+Thread类中的ThreadLocalMap字段：
+
+```java
+	/* ThreadLocal values pertaining to this thread. This map is maintained
+     * by the ThreadLocal class. */
+    ThreadLocal.ThreadLocalMap threadLocals = null;
+
+    /*
+     * InheritableThreadLocal values pertaining to this thread. This map is
+     * maintained by the InheritableThreadLocal class.
+     */
+    ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
+```
+
+
+
+ThreadLocal类set方法：
+
+```java
+public void set(T value) {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null)
+            map.set(this, value);
+        else
+            createMap(t, value);
+    }
+```
+
+
+
+ThreadLocal类get方法：
+
+```java
+public T get() {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null) {
+            ThreadLocalMap.Entry e = map.getEntry(this);
+            if (e != null) {
+                @SuppressWarnings("unchecked")
+                T result = (T)e.value;
+                return result;
+            }
+        }
+        return setInitialValue();
+    }
+```
+
+
+
+ThreadLocal类getMap方法：
+
+```java
+ThreadLocalMap getMap(Thread t) {
+        return t.threadLocals;
+    }
+```
+
+
+
+ThreadLocal类createMap方法：
+
+```java
+void createMap(Thread t, T firstValue) {
+        t.threadLocals = new ThreadLocalMap(this, firstValue);
+    }
+```
+
+
+
+ThreadLocalMap中的Entry类：
+
+```java
+static class Entry extends WeakReference<ThreadLocal<?>> {
+            Object value;
+
+            Entry(ThreadLocal<?> k, Object v) {
+                super(k);
+                value = v;
+            }
+        }
+```
+
+
+
+#### InheritableThreadLocal类
+
+由于ThreadLocalMap对象为当前线程的本地变量，所以当前线程的子线程是不能获取的
+
+要实现子线程访问浮现出的独享资源，可以使用InheritableThreadLocal类代替ThreadLocal类
+
+InheritableThreadLocal类继承了ThreadLocal类，并重写了childValue、getMap、createMap三个方法：
+
+```java
+public class InheritableThreadLocal<T> extends ThreadLocal<T> {
+    
+    protected T childValue(T parentValue) {
+        return parentValue;
+    }
+
+    ThreadLocalMap getMap(Thread t) {
+       return t.inheritableThreadLocals;
+    }
+
+    void createMap(Thread t, T firstValue) {
+        t.inheritableThreadLocals = new ThreadLocalMap(this, firstValue);
+    }
+}
+```
+
+当线程通过InheritableThreadLocals实例的set或者get方法设置变量的时候，就会创建当前线程的inheritableThreadLocals变量。而父线程创建子线程的时候，ThreadLocalMap中的构造函数会将父线程的inheritableThreadLocals中的变量复制一份到子线程的inheritableThreadLocals变量中
+
+
+
+#### 内存泄漏
+
+![](Java并发编程.assets/threadlocal.png)
+
+- 当ThreadLocal引用指向了其他地方或者null，如果上图虚线为实线即强引用，那么堆里的ThreadLocal就会造成内存泄漏，所以Entry设计成了保存ThreadLocal的弱引用，在gc时自动回收ThreadLocal对象
+- 在上述情况下，value仍然存在内存泄漏的问题，所以在线程的某个ThreadLocal对象使用完时，一定要调用ThreadLocal的 `remove()` 方法
+- 线程结束后，Current Thread引用就不会再存在于栈区，所以Current Thread、Map、Value等都会被gc回收
+- 如果使用的线程池，线程使用完后回到线程池里而不会被销毁，这样就可能出现ThreadLocal的内存泄漏
+
+
+
+#### 应用场景
+
+ThreadLocal的应用场景：
+
+- Spring采用Threadlocal的方式，来保证单个线程中的数据库操作使用的是同一个数据库连接
+- 包装SimpleDataFormat
