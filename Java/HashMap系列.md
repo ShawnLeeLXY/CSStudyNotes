@@ -846,6 +846,39 @@ HashMap的三个空方法被LinkedHashMap重写了，包括 `afterNodeAccess()` 
 
 
 
+用LinkedHashMap可以实现LRU缓存机制，容量满时删除最久未使用的元素
+
+代码演示：
+
+```java
+/**
+ * LeetCode第146题 LRU 缓存机制
+ */
+class LRUCache extends LinkedHashMap<Integer, Integer> {
+    private int capacity;
+
+    public LRUCache(int capacity) {
+        super(capacity, 0.75F, true);
+        this.capacity = capacity;
+    }
+
+    public int get(int key) {
+        return super.getOrDefault(key, -1);
+    }
+
+    public void put(int key, int value) {
+        super.put(key, value);
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
+        return size() > capacity;
+    }
+}
+```
+
+
+
 
 
 
