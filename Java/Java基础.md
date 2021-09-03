@@ -820,6 +820,20 @@ public class StringBuilderReverse {
 
 
 
+### 4 StringBuffer
+
+StringBuffer和StringBuilder都继承自AbstractStringBuilder
+
+StringBuffer的所有公开方法都是synchronized修饰的，所以是线程安全的
+
+StringBuffer有一个缓冲区 `private transient char[] toStringCache;`
+
+每次调用 `toString()` 方法都会生成 cache，一旦StringBuffer的value被修改，则cache置为 null
+
+[StringBuffer 和 StringBuilder 的 3 个区别](https://segmentfault.com/a/1190000017909550)
+
+
+
 
 
 ## 第3节 集合基础
@@ -1211,7 +1225,7 @@ Java编译器支持向上转型，但不支持向下转型
 
 一个类如果没有父类，默认继承自Object类
 
-接口的成员方法默认被`public abstract`修饰
+接口的成员方法默认被`public abstract`修饰（有些接口会重新声明Object类中的方法来附加javadoc注释，这样的方法不会被 `abstract` 修饰，如Comparator接口中的 `eqauls()` 方法）
 
 **抽象类**是对**事物**的抽象，**接口**是对**行为**的抽象
 
@@ -1332,8 +1346,8 @@ public class OuterDemo {
 | clone           | 拷贝一个对象                                                 |
 | getClass        | 返回该对象所属类对应的Class对象                              |
 | wait            | 使当前线程等待并释放此对象的锁                               |
-| notify          | 唤醒在此对象monitor上等待的单个任意线程                      |
-| notifyAll       | 唤醒在此对象monitor上等待的所有线程                          |
+| notify          | 唤醒在此对象monitor上等待的单个任意线程进入就绪态            |
+| notifyAll       | 唤醒在此对象monitor上等待的所有线程进入就绪态                |
 | toString        | 返回对象的字符串表示形式。建议所有子类重写该方法，自动生成   |
 | finalize        | GC判定该对象没有再被引用时被垃圾收集器调用                   |
 
@@ -1398,7 +1412,7 @@ Math、System、Arrays的构造方法都被`private`修饰（防止外界创建�
 
 
 
-### 6 日期类
+### 7 日期类
 
 Date类的常用方法：`getTime()`，`setTime()`
 
@@ -2606,7 +2620,7 @@ public class PropertiesTestDemo {
   5. 创建Thread类的对象，把FutureTask对象作为构造方法的参数
   6. 启动线程
   7. 调用FutureTask对象的`get()`方法来获得线程执行结束后的返回值
-- 使用线程池
+- 方式四：使用线程池
 
 使用方式二相比方式一的好处：
 
@@ -3000,7 +3014,7 @@ Lambda表达式的三要素：形式参数，箭头，代码块
 Lambda表达式的使用前提：
 
 - 有一个接口
-- 接口中有且仅有一个抽象方法
+- 接口中有且仅有一个**抽象方法**
 
 Lambda表达式的格式：`(形式参数) -> (代码块)`
 

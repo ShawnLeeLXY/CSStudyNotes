@@ -94,92 +94,55 @@ public class DaemonDemo {
 
 ### 3 线程状态
 
-java.lang.Tread中的枚举类Sate枚举了6种线程状态：
+java.lang.Thread中的枚举类Sate枚举了6种线程状态：
 
 ```java
 public enum State {
-    /**
-     * Thread state for a thread which has not yet started.
-     */
+    
     NEW,//新建
-
-    /**
-     * Thread state for a runnable thread.  A thread in the runnable
-     * state is executing in the Java virtual machine but it may
-     * be waiting for other resources from the operating system
-     * such as processor.
-     */
     RUNNABLE,//就绪
-
-    /**
-     * Thread state for a thread blocked waiting for a monitor lock.
-     * A thread in the blocked state is waiting for a monitor lock
-     * to enter a synchronized block/method or
-     * reenter a synchronized block/method after calling
-     * {@link Object#wait() Object.wait}.
-     */
     BLOCKED,//阻塞
-
-    /**
-     * Thread state for a waiting thread.
-     * A thread is in the waiting state due to calling one of the
-     * following methods:
-     * <ul>
-     *   <li>{@link Object#wait() Object.wait} with no timeout</li>
-     *   <li>{@link #join() Thread.join} with no timeout</li>
-     *   <li>{@link LockSupport#park() LockSupport.park}</li>
-     * </ul>
-     *
-     * <p>A thread in the waiting state is waiting for another thread to
-     * perform a particular action.
-     *
-     * For example, a thread that has called <tt>Object.wait()</tt>
-     * on an object is waiting for another thread to call
-     * <tt>Object.notify()</tt> or <tt>Object.notifyAll()</tt> on
-     * that object. A thread that has called <tt>Thread.join()</tt>
-     * is waiting for a specified thread to terminate.
-     */
     WAITING,//等待
-
-    /**
-     * Thread state for a waiting thread with a specified waiting time.
-     * A thread is in the timed waiting state due to calling one of
-     * the following methods with a specified positive waiting time:
-     * <ul>
-     *   <li>{@link #sleep Thread.sleep}</li>
-     *   <li>{@link Object#wait(long) Object.wait} with timeout</li>
-     *   <li>{@link #join(long) Thread.join} with timeout</li>
-     *   <li>{@link LockSupport#parkNanos LockSupport.parkNanos}</li>
-     *   <li>{@link LockSupport#parkUntil LockSupport.parkUntil}</li>
-     * </ul>
-     */
     TIMED_WAITING,//过时不候
-
-    /**
-     * Thread state for a terminated thread.
-     * The thread has completed execution.
-     */
     TERMINATED;//终结
+    
 }
 ```
 
 
 
-### 4 wait和sleep
+### 4 线程常用方法
 
 wait：
 
 - wait是Object类的方法，所以任何对象实例都能调用
-- 可选设置等待时间
+- 使线程进入等待态，可选设置等待时间，则使线程进入限期等待态
 - wait会释放锁
 
 sleep：
 
 - sleep是Thread类的静态方法
-- 必须设置等待时间
+- 必须设置等待时间，使线程进入限期等待态
 - sleep不会释放锁，也不需要占用锁
 
 wait()和sleep()都可以被Thread类的interrupt()方法中断
+
+yield：
+
+- yield是Thread类的静态方法
+- 声明了当前线程已经完成了生命周期中最重要的部分，可以切换给其它线程来执行
+- 该方法只是对线程调度器的一个建议
+
+interrupt：
+
+- interrupt是Thread类的方法
+- `thread1.interrupt()` 用于中断执行中的线程 `thread1`
+- 如果该线程catch或抛出了InterruptedException，则提前结束，否则无法提前结束
+- interrupt会设置线程thread1的中断标记为true，此时在thread1调用静态方法 `interrupted()` 会返回true
+
+join：
+
+- 在当前线程中调用另一个线程的 `join()` 方法，会使当前线程进入等待态或限期等待态，直到另一个线程结束才能继续执行
 
 
 
@@ -199,7 +162,7 @@ wait()和sleep()都可以被Thread类的interrupt()方法中断
 
 
 
-## 第2节 Lock接口
+## 第2节 synchronized和Lock
 
 ### 1 synchronized关键字
 
@@ -207,10 +170,10 @@ synchronized是一种同步锁
 
 synchronized作用范围：
 
-1. 代码块：被大括号括起来的同步语句块
-2. 实例方法：同步方法
-3. 静态方法
-4. 类
+1. **代码块**：被大括号括起来的同步语句块，锁的是**当前对象**
+2. **实例方法**：同步方法，锁**当前对象**
+3. **静态方法**：锁的是**对应的类**
+4. **类**：锁的是**当前类**
 
 
 
@@ -220,9 +183,10 @@ synchronized与Lock的不同点：
 2. 发生异常时：
    - synchronized会**自动释放**线程占用的锁
    - Lock如果没有主动通过unLock()去释放锁，则可能造成死锁现象
-3. Lock可以让等待的锁的线程**响应中断**，而synchronized不行
-4. Lock可以知道**有没有成功获取锁**，而synchronized不行
-5. Lock可以提高多个线程进行**读操作的效率**
+3. Lock可以让等待锁的线程**等待中断**，改为处理其他事情，而synchronized不行
+4. synchronized中的锁是非公平的，ReentantLock默认非公平，但也可以设置为公平锁
+5. Lock可以知道**有没有成功获取锁**，而synchronized不行
+6. Lock可以提高多个线程进行**读操作的效率**
 
 
 
@@ -1115,6 +1079,8 @@ juc包中的一个辅助类，用来计数
 
 `countDown()` 方法：减少计数器的计数
 
+减到0时，调用 `await()` 方法的线程就会被唤醒
+
 
 
 CountDownLatch代码演示：
@@ -1151,6 +1117,10 @@ public class CountDownLatchDemo {
 juc包中的一个辅助类，用于使一组线程等待彼此都完成某种条件，然后可选执行某个Runnable接口的实现类
 
 使用方式：构造方法 + `await()` 方法
+
+每使用一次CyclicBarrier的 `await()` 方法就会使计数器-1
+
+减到0时，所有调用了CyclicBarrier的 `await()` 方法的线程就会被唤醒，同时计数器恢复初始值，所以叫做循环栅栏或循环屏障
 
 
 
@@ -1252,7 +1222,7 @@ public class SemaphoreDemo {
 
 乐观锁：
 
-- 总是假设最好的情况，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据（比对版本）
+- 总是假设最好的情况，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据（比对版本），如果没有其他线程争用共享数据，那操作就成功了，否则不断重试，直到成功为止
 - 支持并发
 
 
@@ -1510,11 +1480,26 @@ Java中的线程池通过Executor体系实现，包括Executors工具类
 
 ### 2 线程池的使用方式
 
-线程池的使用方式：
+创建线程池：
 
 1. Executors.newFixedThreadPool(int n)：一池N线程
 2. Executors.newSingleThreadExecutor()：一池一线程
 3. Executors.newCachedThreadPool()：可扩容
+
+
+
+关闭线程池：
+
+- `shutdown()` 方法会等待线程都执行完毕之后再关闭线程池
+- `shutdownNow()` 方法相当于调用每个线程的 `interrupt()` 方法
+
+
+
+中断线程池中的一个线程：
+
+- `submit()` 返回一个Future对象，调用该对象的 `cancel(true)` 方法就可以中断线程
+
+
 
 代码演示：
 
@@ -1644,6 +1629,10 @@ public class ThreadPoolDemo2 {
 ForkJoinPool于JDK7中加入
 
 Fork/Join可以将一个大的任务拆分成多个子任务进行并行处理，最后将子任务结果合并成最后的计算结果，并进行输出
+
+Fork/Join使用ForkJoinPool来启动，它是一个特殊的线程池，线程数量取决于CPU核数
+
+ForkJoinPool实现了工作窃取算法来提高CPU的利用率
 
 Fork：拆分
 
