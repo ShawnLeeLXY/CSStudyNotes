@@ -38,10 +38,15 @@ class Solution {
 
 **快速排序**是一种**不稳定排序**
 
-挖坑填数+分治法（边分边治）
+分治法（边分边治）
+
+时间复杂度：平均 $O(NlogN)$，最坏 $O(N^2)$
+
+空间复杂度：平均 $O(logN)$，最坏 $O(N)$
 
 ```java
 class Solution {
+
     public int[] sortArray(int[] nums) {
         quickSort(nums, 0, nums.length - 1);
         return nums;
@@ -49,44 +54,109 @@ class Solution {
 
     private void quickSort(int[] nums, int left, int right) {
         if (left >= right) return;
-        int i = left, j = right, pivot = nums[i];
-        while (i < j) {
-            while (i < j && nums[j] > pivot) j--;
-            nums[i] = nums[j];
-            while (i < j && nums[i] <= pivot) i++;
-            nums[j] = nums[i];
+        int pivot = nums[left];
+        int lt = left;
+        for (int i = left + 1; i <= right; i++) {
+            if (nums[i] < pivot) swap(nums, ++lt, i);
         }
-        nums[i] = pivot;
-        quickSort(nums, left, i - 1);
-        quickSort(nums, i + 1, right);
+        swap(nums, left, lt);
+        quickSort(nums, left, lt - 1);
+        quickSort(nums, lt + 1, right);
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
     }
 }
 ```
 
 
 
-在数组刚好是倒序时，时间复杂度将退化成 $O(n^2)$
+在数组已接近完全正序或倒序时，时间复杂度将退化成 $O(N^2)$，极端情况完全有序，递归树高为n，退化成了选择排序
 
-优化：基准数选择数组中间的值，使用循坏结构代替左子数组的递归，将等于pivot的元素平均分到两边
+最优的情况是每次选择基数pivot都是数组的中位数，这样可以使递归树高最小
+
+优化方式：
+
+- **随机选择切分元素**：每次partition的基准数选择随机一个数（或者直接选择数组中间的值），交换到数组开头
+
+  如果数组中有大量重复元素，这种方式就失效了，这时可以采取以下其中一种优化方式：
+
+  - **指针对撞**：将等于pivot的元素平均分到两边
+  - **三向切分**：在遍历的过程中把待排序的部分分成三个区间，将等于pivot的元素集中到中间的区间
+
+- 使用循坏结构代替左子数组的递归可以略微优化递归时的树高
+
+
+
+采用指针对撞的快速排序：
 
 ```java
 class Solution {
+
+    private Random random;
+
     public int[] sortArray(int[] nums) {
+        random = new Random();
         quickSort(nums, 0, nums.length - 1);
         return nums;
     }
 
     private void quickSort(int[] nums, int left, int right) {
-        while (left < right) {
-            int i = left, j = right, pivot = nums[i + (j - i) / 2];
-            while (i <= j) {
-                while (i <= j && nums[i] < pivot) i++;
-                while (i <= j && nums[j] > pivot) j--;
-                if (i <= j) swap(nums, i++, j--);
-            }
-            quickSort(nums, i, right);
-            right = j;
+        if (left >= right) return;
+        int ind = left + random.nextInt(right - left + 1);
+        swap(nums, left, ind);
+        int pivot = nums[left];
+        int i = left + 1, j = right;
+        while (i <= j) {
+            while (i <= j && nums[i] < pivot) i++;
+            while (i <= j && nums[j] > pivot) j--;
+            if (i <= j) swap(nums, i++, j--);
         }
+        swap(nums, left, j);
+        quickSort(nums, left, j - 1);
+        quickSort(nums, j + 1, right);
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+```
+
+
+
+采用三向切分的快速排序：
+
+```java
+class Solution {
+
+    private Random random;
+
+    public int[] sortArray(int[] nums) {
+        random = new Random();
+        quickSort(nums, 0, nums.length - 1);
+        return nums;
+    }
+
+    private void quickSort(int[] nums, int left, int right) {
+        if (left >= right) return;
+        int ind = left + random.nextInt(right - left + 1);
+        swap(nums, left, ind);
+        int pivot = nums[left];
+        int lt = left, gt = right + 1, i = left + 1;
+        while (i < gt) {
+            if (nums[i] < pivot) swap(nums, ++lt, i++);
+            else if (nums[i] == pivot) i++;
+            else swap(nums, i, --gt);
+        }
+        swap(nums, left, lt);
+        quickSort(nums, left, lt - 1);
+        quickSort(nums, gt, right);
     }
 
     private void swap(int[] nums, int i, int j) {

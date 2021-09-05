@@ -1225,7 +1225,7 @@ Java编译器支持向上转型，但不支持向下转型
 
 一个类如果没有父类，默认继承自Object类
 
-接口的成员方法默认被`public abstract`修饰（有些接口会重新声明Object类中的方法来附加javadoc注释，这样的方法不会被 `abstract` 修饰，如Comparator接口中的 `eqauls()` 方法）
+接口的成员方法默认被`public abstract`修饰（有些接口会重新声明Object类中的方法来附加javadoc注释，这样的方法不会被 `abstract` 修饰，如Comparator接口中的 `equals()` 方法）
 
 **抽象类**是对**事物**的抽象，**接口**是对**行为**的抽象
 
@@ -1357,7 +1357,7 @@ public class OuterDemo {
 
 Class是一个用于描述Java类与接口的、用于支持反射操作的类型
 
-Class类ye是Object类的派生类
+Class类是Object类的派生类
 
 Java程序在运行时，每创建一个对象a，JVM就会创建一个Class对象b来保存a的类型信息
 
@@ -1373,7 +1373,18 @@ Java程序启动后先创建一个叫Object的原生类，然后加载Class类�
 
 Arrays类包含各种操作数组的方法
 
-`Arrays.sort()`排序（底层是**快速排序**+**归并排序**）
+`Arrays.sort()` 排序
+
+- JDK 8 以前：
+  - 基本类型：采用优化的快速排序
+    - 数组length<7，采用插入排序
+    - 数组length=7，取中间元素为划分元
+    - 数组7<length<=40，取首、中、末三个元素的中位数作为划分元
+    - 数组length>40，从数组中较均匀地选择9个元素，选出一个伪中数作为划分元
+    - 采用了三向切分的方式优化快速排序
+  - 引用类型：采用优化的归并排序
+    - 数组length<7，采用插入排序
+- JDK 8 及之后：采用TimSort算法（归并排序+插入排序）
 
 `Arrays.toString()`数组转字符串
 
@@ -3072,7 +3083,7 @@ Lambda表达式的省略模式
 
 函数式接口：有且仅有一个抽象方法的接口
 
-在IDEA中用`@FunctionalInterface`放在接口定义的上方：如果接口时函数式接口，编译通过；如果不是，编译失败
+在IDEA中用`@FunctionalInterface`放在接口定义的上方：如果接口是函数式接口，编译通过；如果不是，编译失败
 
 如果方法的参数是一个函数式接口，可以使用Lambda表达式作为参数传递
 

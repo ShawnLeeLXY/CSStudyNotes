@@ -23,7 +23,7 @@ transient Node<K,V>[] table;
 
 每个桶里面存放的是**链表**，链表中的每个节点 `Node` 就是哈希表中的每个元素
 
-JDK 8之后在链表节点超过8是会将链表转化成**红黑树**，使用 `TreeNode` 作为红黑树的节点
+JDK 8之后在链表节点超过8时会将链表转化成**红黑树**，使用TreeNode对象作为红黑树的节点
 
 
 
@@ -816,6 +816,34 @@ final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
 
 
 
+### 11 HashMap中的红黑树
+
+JDK 8之后在链表节点超过8时会将链表转化成**红黑树**，使用HashMap.TreeNode对象作为红黑树的节点，TreeNode继承自LinkedHashMap；而当HashMap的红黑树的元素小于等于6时重新转化为链表结构
+
+
+
+- 为什么在这个长度转为红黑树？
+
+  一个bucket上的节点数目遵循泊松分布，长度超过8的概率十分小，所以选用了8作为链表转为红黑树的阈值
+
+- 为什么使用红黑树而不是二叉排序树？
+
+  二叉排序树可能退化为链表
+
+- 为什么使用红黑树而不是AVL树？
+
+  1. AVL树平衡条件更严格，适合**查找密集型**任务
+  2. AVL树的旋转平衡比红黑树更繁琐，红黑树最多只需要旋转2次，因此红黑树更适合**插入密集型任务**
+  3. ConcurrentHashMap中加了读写锁，如果写冲突就会等待，因此插入更快的更适合并发环境
+
+- 为什么使用红黑树而不是B+树？
+
+  B+树插入慢，查找快；红黑树插入快，查找慢。理由类似AVL树
+
+
+
+
+
 
 
 ## 第2节 Hashtable
@@ -823,7 +851,7 @@ final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
 Hashtable与HashMap的区别：
 
 - Hashtable键值对必须非空
-- 大多数方法都被synchronized关键字修饰，所以（相对）线程安全
+- 所有涉及线程安全的public方法都被synchronized关键字修饰，所以（相对）线程安全
 - Hashtable默认容量为11，不是2的次方，不利于位运算优化
 - Hashtable直接使用 `hashCode()` 方法，而HashMap使用 `hash()` 对hashCode进行了扰动
 - Hashtable的table下标直接使用模运算%
