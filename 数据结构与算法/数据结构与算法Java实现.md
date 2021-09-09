@@ -819,3 +819,52 @@ class Solution {
 }
 ```
 
+
+
+
+
+
+
+## 字符串查找算法
+
+### KMP算法
+
+[KMP 算法详解](https://zhuanlan.zhihu.com/p/83334559)
+
+核心思想：自动状态机 + 动态规划
+
+时间复杂度：$O(N)$
+
+空间复杂度：$O(M)$
+
+其中N为文本长度，M为匹配字符串长度
+
+代码演示：
+
+```java
+class Solution {
+
+    public int kmp(String text, String pat) {
+        int n = text.length(), m = pat.length();
+        if (m == 0) return 0;
+        if (m > n) return -1;
+        int[][] dp = new int[m][256];
+        dp[0][pat.charAt(0)] = 1;
+        int x = 0;
+        for (int i = 1; i < m; i++) {
+            for (int c = 0; c < 256; c++) {
+                dp[i][c] = dp[x][c];
+            }
+            dp[i][pat.charAt(i)] = i + 1;
+            x = dp[x][pat.charAt(i)];
+        }
+        int i = 0, j = 0;
+        while (i < n && j < m) {
+            j = dp[j][text.charAt(i++)];
+        }
+        if (j == m) return i - m;
+        return -1;
+    }
+}
+```
+
