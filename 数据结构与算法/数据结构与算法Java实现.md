@@ -8,8 +8,15 @@
 
 基本思想：将一个元素插入一个有序数组中，使之成为更长的有序数组
 
+适合数组基本有序的情况
+
+时间复杂度：$O(N^2)$
+
+空间复杂度：$O(1)$
+
 ```java
 class Solution {
+    
     public int[] sortArray(int[] nums) {
         insertionSort(nums);
         return nums;
@@ -34,11 +41,216 @@ class Solution {
 
 
 
+### 冒泡排序
+
+**冒泡排序**是一种**稳定排序**
+
+基本思想：做N - 1轮，两两比较，每轮把最大的元素放到数组末尾
+
+适合数组基本有序的情况
+
+时间复杂度：$O(N^2)$
+
+空间复杂度：$O(1)$
+
+```java
+class Solution {
+
+    public int[] sortArray(int[] nums) {
+        bubbleSort(nums);
+        return nums;
+    }
+
+    private void bubbleSort(int[] nums) {
+        int n = nums.length;
+        boolean changed = true;
+        for (int i = 1; i < n && changed; i++) {
+            changed = false;
+            for (int j = 0; j < n - i; j++) {
+                if (nums[j] > nums[j + 1]) {
+                    swap(nums, j, j + 1);
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+```
+
+
+
+
+
+### 选择排序
+
+**选择排序**是一种**非稳定排序**
+
+基本思想：贪心算法 + 打擂台算法 + 减而治之
+
+时间复杂度：$O(N^2)$
+
+空间复杂度：$O(1)$
+
+```java
+class Solution {
+
+    public int[] sortArray(int[] nums) {
+        selectSort(nums);
+        return nums;
+    }
+
+    private void selectSort(int[] nums) {
+        int n = nums.length;
+        for (int i = 0; i < n - 1; i++) {
+            int minInd = i;
+            for (int j = i + 1; j < n; j++) {
+                if (nums[j] < nums[minInd]) {
+                    minInd = j;
+                }
+            }
+            swap(nums, i, minInd);
+        }
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+```
+
+
+
+
+
+### 归并排序
+
+**归并排序**是一种**稳定排序**
+
+基本思想：分而治之，直到最后只剩一个元素后返回，借用辅助数组对两个数组做合并
+
+时间复杂度：$O(NlogN)$
+
+空间复杂度：$O(N)$
+
+```java
+class Solution {
+
+    public int[] sortArray(int[] nums) {
+        mergeSort(nums, 0, nums.length - 1);
+        return nums;
+    }
+
+    private void mergeSort(int[] nums, int left, int right) {
+        if (left == right) return;
+        int mid = left + (right - left) / 2;
+        mergeSort(nums, left, mid);
+        mergeSort(nums, mid + 1, right);
+        merge(nums, left, mid, right);
+    }
+
+    private void merge(int[] nums, int left, int mid, int right) {
+        int len = right - left + 1;
+        int[] temp = new int[len];
+        for (int i = 0; i < len; i++) {
+            temp[i] = nums[left + i];
+        }
+        int i = 0, j = mid - left + 1;
+        for (int k = left; k <= right; k++) {
+            if (i == mid - left + 1) {
+                nums[k] = temp[j++];
+            } else if (j == right - left + 1) {
+                nums[k] = temp[i++];
+            } else if (temp[i] <= temp[j]) {
+                nums[k] = temp[i++];
+            } else {
+                nums[k] = temp[j++];
+            }
+        }
+    }
+}
+```
+
+
+
+优化方式：
+
+1. 小区间使用插入排序
+2. 子区间本身有序则无需归并
+3. 在整个归并过程中，使用同一个辅助数组
+
+优化的归并排序：
+
+```java
+class Solution {
+
+    private static final int THRESHOLD = 47;
+
+    public int[] sortArray(int[] nums) {
+        int[] temp = new int[nums.length];
+        mergeSort(nums, 0, nums.length - 1, temp);
+        return nums;
+    }
+
+    private void mergeSort(int[] nums, int left, int right, int[] temp) {
+        if (right - left < THRESHOLD) {
+            insertionSort(nums, left, right);
+            return;
+        }
+        int mid = left + (right - left) / 2;
+        mergeSort(nums, left, mid, temp);
+        mergeSort(nums, mid + 1, right, temp);
+        if (nums[mid] <= nums[mid + 1]) return;
+        merge(nums, left, mid, right, temp);
+    }
+
+    private void merge(int[] nums, int left, int mid, int right, int[] temp) {
+        for (int i = left; i <= right; i++) {
+            temp[i] = nums[i];
+        }
+        int i = left, j = mid + 1;
+        for (int k = left; k <= right; k++) {
+            if (i == mid + 1) {
+                nums[k] = temp[j++];
+            } else if (j == right + 1) {
+                nums[k] = temp[i++];
+            } else if (temp[i] <= temp[j]) {
+                nums[k] = temp[i++];
+            } else {
+                nums[k] = temp[j++];
+            }
+        }
+    }
+
+    private void insertionSort(int[] nums, int left, int right) {
+        for (int i = left + 1; i <= right; i++) {
+            int j = i, temp = nums[j];
+            while (j > left && temp < nums[j - 1]) {
+                nums[j] = nums[j - 1];
+                j--;
+            }
+            nums[j] = temp;
+        }
+    }
+}
+```
+
+
+
+
+
 ### 快速排序
 
 **快速排序**是一种**不稳定排序**
 
-分治法（边分边治）
+基本思想：分而治之，每轮选择一个基准数，把小于和大于基准数的元素分到两边
 
 时间复杂度：平均 $O(NlogN)$，最坏 $O(N^2)$
 
@@ -170,6 +382,122 @@ class Solution {
 
 
 快速排序为什么不稳定的：若数组中有和选择的pivot相等的数，且该数在pivot左侧，这时如果把大于等于pivot的数分到右侧，那么排序后该数就在pivot右侧了
+
+
+
+
+
+
+
+## 优先队列
+
+### 堆
+
+**优先队列**又叫**堆**，是一种完全二叉树，可用数组实现
+
+**堆有序**：任意子节点的值都小于等于其父节点的值
+
+大顶堆：根节点为最大值
+
+小顶堆：根节点为最小值
+
+若根节点索引从1开始，则某个节点索引为 $i$，其父节点为 $i/2$，左子节点为 $2 * i$，右子节点为 $2 * i + 1$
+
+堆的基本操作：
+
+- 添加元素：添加至数组中堆的最后一位，然后 `siftUp()`
+- 出队：返回堆顶元素，将最后一个元素的值赋值到根节点，再 `siftDown()`
+
+`siftUp()` 和 `siftDown()` 时间复杂度：$O(logN)$
+
+大顶堆代码演示：
+
+```java
+public class MaxHeap {
+
+    private int[] data;
+    private int capacity;
+    private int size;
+
+    public int size() {
+        return size;
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    public int peek() {
+        if (isEmpty()) {
+            throw new IllegalArgumentException("堆为空");
+        }
+        return data[1];
+    }
+
+    public MaxHeap(int capacity) {
+        data = new int[capacity + 1];
+        this.capacity = capacity;
+        size = 0;
+    }
+
+    public void offer(int item) {
+        if (size + 1 > capacity) {
+            throw new IllegalArgumentException("堆空间已满");
+        }
+        data[++size] = item;
+        siftUp(size);
+    }
+
+    private void siftUp(int k) {
+        int temp = data[k];
+        while (k > 1 && data[k / 2] < temp) {
+            data[k] = data[k / 2];
+            k /= 2;
+        }
+        data[k] = temp;
+    }
+
+    public int poll() {
+        if (size == 0) {
+            throw new IllegalArgumentException("堆为空");
+        }
+        int ret = data[1];
+        data[1] = data[size--];
+        siftDown(1);
+        return ret;
+    }
+
+    private void siftDown(int k) {
+        int temp = data[k];
+        while (2 * k <= size) {
+            int j = 2 * k;
+            if (j + 1 <= size && data[j + 1] > data[j]) {
+                j++;
+            }
+            if (temp >= data[j]) {
+                break;
+            }
+            data[k] = data[j];
+            k = j;
+        }
+        data[k] = temp;
+    }
+
+    public void replace(int item) {
+        if (isEmpty()) {
+            throw new IllegalArgumentException("堆为空");
+        }
+        data[1] = item;
+        siftDown(1);
+    }
+}
+```
+
+
+
+
+
+
 
 
 

@@ -152,7 +152,11 @@
    - GC Roots到某个对象不可达，则此对象可回收
    - 回收对象的两次标记过程：
      1. 是否有与 GC Roots 相连接的<u>引用链</u>
-     2. 对象是否覆盖`finalize()`方法或`finalize()`方法已被调用过
+     2. 对象是否覆盖 `finalize()` 方法或 `finalize()` 方法已被调用过
+        - 未被覆盖或已被调用，则直接回收
+        - 被覆盖且未被调用，则进入F-Queue，Finalizer线程在执行 `finalize()` 后做第二次标记
+          - 与 GC Roots 建立联系，则被移出 F-Queue
+          - 未建立联系，则被回收
 
 
 
