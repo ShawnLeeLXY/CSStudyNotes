@@ -387,6 +387,65 @@ class Solution {
 
 
 
+### 堆排序
+
+**堆排序**是一种**不稳定排序**，是选择排序的优化
+
+基本思想：先把数组整理成最大堆，再执行 N - 1 次交换堆顶和末尾元素、对堆顶元素做 siftDown 操作
+
+时间复杂度：$O(NlogN)$，其中自底向上建堆法时间复杂度 $O(N)$
+
+空间复杂度：$O(1)$
+
+```java
+class Solution {
+
+    public int[] sortArray(int[] nums) {
+        heapSort(nums);
+        return nums;
+    }
+
+    private void heapSort(int[] nums) {
+        int len = nums.length;
+        heapify(nums);
+        int i = len - 1;
+        while (i >= 1) {
+            swap(nums, 0, i);
+            siftDown(nums, 0, --i);
+        }
+    }
+
+    private void heapify(int[] nums) {
+        int len = nums.length;
+        for (int i = (len - 1) / 2; i >= 0; i--) {
+            siftDown(nums, i, len - 1);
+        }
+    }
+
+    private void siftDown(int[] nums, int k, int end) {
+        int j;
+        while ((j = 2 * k + 1) <= end) {
+            if (j + 1 <= end && nums[j] < nums[j + 1]) {
+                j++;
+            }
+            if (nums[k] >= nums[j]) break;
+            swap(nums, k, j);
+            k = j;
+        }
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+```
+
+
+
+
+
 
 
 ## 优先队列
@@ -492,12 +551,6 @@ public class MaxHeap {
     }
 }
 ```
-
-
-
-
-
-
 
 
 
