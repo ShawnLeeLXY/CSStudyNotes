@@ -1231,6 +1231,7 @@ class Solution {
         if (m > n) return -1;
         int[][] dp = new int[m][256];
         dp[0][pat.charAt(0)] = 1;
+        // 影子状态x初始为0
         int x = 0;
         for (int i = 1; i < m; i++) {
             for (int c = 0; c < 256; c++) {
@@ -1240,6 +1241,7 @@ class Solution {
             x = dp[x][pat.charAt(i)];
         }
         int i = 0, j = 0;
+        // 搜索text
         while (i < n && j < m) {
             j = dp[j][text.charAt(i++)];
         }
