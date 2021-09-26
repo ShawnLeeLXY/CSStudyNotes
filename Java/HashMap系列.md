@@ -868,9 +868,32 @@ Hashtable与HashMap的区别：
 
 LinkedHashMap是HashMap的子类，实现了Map接口
 
+LinkedHashMap内部使用**双向链表**维护元素的插入顺序，其实现为一个继承Node的子类Entry类
+
+```java
+static class Entry<K,V> extends HashMap.Node<K,V> {
+        Entry<K,V> before, after;
+        Entry(int hash, K key, V value, Node<K,V> next) {
+            super(hash, key, value, next);
+        }
+    }
+```
+
+
+
 HashMap的三个空方法被LinkedHashMap重写了，包括 `afterNodeAccess()`  、 `afterNodeInsertion()` 和 `afterNodeRemoval()`，从而可以实现记录顺序
 
-在初始化LinkedHashMap时，设置字段 `accessOrder` 为true表示按访问顺序存储，false表示按插入顺序存储
+在初始化LinkedHashMap时，设置字段 `accessOrder` 为true表示按访问顺序存储，false表示按插入顺序存储，默认为false
+
+LinkedHashSet继承了HashSet，构造方法中会调用HashSet中的一个构造方法：
+
+```java
+HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+        map = new LinkedHashMap<>(initialCapacity, loadFactor);
+    }
+```
+
+可见LinkedHashSet最终也是通过LinkedHashMap来实现有序存储的
 
 
 
