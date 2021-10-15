@@ -10,7 +10,7 @@ HashMap是一个关联数组、哈希表
 
 线程不安全（准确地说是线程兼容）
 
-允许一个key为null，多个vaule为null
+允许一个key为null，多个value为null
 
 
 
