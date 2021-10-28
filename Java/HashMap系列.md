@@ -1033,9 +1033,9 @@ ConcurrentHashMap的key和value都不能为null，否则会抛出NullPointerExce
 
 
 
-ConcurrentHashMap在JDK 7版本采用ReentrantLock+Segment+HashEntry
+ConcurrentHashMap在JDK 7版本采用 **Segment** + **HashEntry**
 
-分段锁技术：将整个数据结构分段（默认为16段）进行存储，然后给每一段数据配一把锁（继承ReentrantLock），当一个线程占用锁访问其中一个段的数据的时候，其他段的数据仍然能被其他线程访问，能够实现真正的并发访问
+分段锁技术：将整个数据结构分段（默认为16段）进行存储，然后给每一段数据配一把Segment锁（继承ReentrantLock），当一个线程占用锁访问其中一个段的数据的时候，其他段的数据仍然能被其他线程访问，能够实现真正的并发访问
 
 高效且能减小锁的粒度
 
@@ -1045,9 +1045,9 @@ JDK 7中ConcurrentHashMap的结构：
 
 
 
-ConcurrentHashMap在JDK 8版本中采用synchronized（写）+CAS（读）+HashEntry+红黑树
+ConcurrentHashMap在JDK 8版本中采用 **synchronized**（写）+ **CAS**（读）+ **Node** + **红黑树**
 
-Node的val和value变量都加上了volatile关键字修饰，目的是在多线程环境下线程A修改结点的val或者新增节点的时候是对线程B可见的
+Node的`val`和`next`变量都加上了volatile关键字修饰，目的是在多线程环境下线程A修改结点的`val`或者新增节点的时候是对线程B可见的
 
 原来是对需要进行数据操作的Segment加锁，JDK8调整为对每个数组元素加锁（Node）
 
