@@ -45,7 +45,7 @@ Kafka是一个开源的分布式流式处理平台，基于ZooKeeper进行管理
 
 5. 开启命令行3，创建topic
 
-   `kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1  --topic test`
+   `bin\windows\kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1  --topic test`
 
 
 
