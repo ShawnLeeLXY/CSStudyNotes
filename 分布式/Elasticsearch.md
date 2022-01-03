@@ -14,14 +14,14 @@
 
 ES相关术语：
 
-- **索引**：对应database，6.0后对应table
-- **类型**：对应table
-- **文档**：对应row
+- **索引index**：对应database，6.0后对应table
+- **类型type**：对应table
+- **文档doc**：对应row
 - **字段**：对应column
-- **集群**：多台服务器的分布式部署
-- **节点**：集群中的每台服务器
-- **分片**：索引拆分成多个分片来存储，提高并发能力
-- **副本**：对分片的备份，一个分片可以包含多个副本
+- **集群cluster**：多台服务器的分布式部署
+- **节点node**：集群中的每台服务器
+- **分片shard**：索引拆分成多个分片来存储，提高并发能力
+- **副本replica**：对分片的备份，一个分片可以包含多个副本
 
 
 
@@ -53,13 +53,13 @@ ES相关术语：
 
 6. 打开Elasticsearch目录下的bin\elasticsearch.bat即启动Elasticsearch服务
 
-*Elasticsearch默认占用9200端口*
+*Elasticsearch默认占用9200端口用于HTTP请求，9300端口用于TCP请求*
 
 
 
 
 
-### 3 命令
+## 3 命令
 
 控制台输入：
 
@@ -70,4 +70,39 @@ ES相关术语：
 - `curl -X DELETE "localhost:9200/test"` 删除名为`test`的索引
 
 可使用postman软件简化输入HTTP请求的过程
+
+
+
+
+
+## 4 Spring整合Elasticsearch
+
+Spring Boot整合Elasticsearch步骤：
+
+1. 引入依赖：`spring-boot-starter-data-elasticsearch`
+2. 在application.properties中配置Elasticsearch：
+   - `cluster-name`
+   - `cluster-nodes`
+3. 使用API：
+   - ElasticsearchTemplate
+   - ElasticsearchRepository
+
+
+
+---
+
+注意：由于Elasticsearch和Redis底层都是Netty，启动时会报IllegalStateException异常
+
+解决方法：在**启动类**中加上以下代码
+
+```java
+@PostConstruct
+public void init() {
+	// 解决netty启动冲突问题
+	// 参见Netty4Utils.setAvailableProcessors()
+	System.setProperty("es.set.netty.runtime.available.processors", "false");
+}
+```
+
+---
 
