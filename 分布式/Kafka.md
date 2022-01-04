@@ -35,11 +35,11 @@ Kafka是一个开源的分布式流式处理平台，基于ZooKeeper进行管理
 
 2. 按需求配置config\下zookeeper.properties和server.properties，如 `dataDir` 和 `log.dirs`
 
-3. 开启命令行1，在kafka目录下输入：
+3. 开启命令行1，在kafka目录下输入以下命令以开启zookeeper服务器：
 
    `bin\windows\zookeeper-server-start.bat config\zookeeper.properties`
 
-4. 开启命令行2，在kafka目录下输入：
+4. 开启命令行2，在kafka目录下输入以开启kafka服务器：
 
    `bin\windows\kafka-server-start.bat config\server.properties`
 
@@ -75,13 +75,13 @@ kafka默认端口：9092
 
 `kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic test --from-beginning`
 
-关闭zookeeper服务器：
-
-`zookeeper-server-stop.bat`
-
 关闭kafka服务器：
 
 `kafka-server-stop.bat`
+
+关闭zookeeper服务器：
+
+`zookeeper-server-stop.bat`
 
 
 
