@@ -148,7 +148,7 @@ Linux共有7种文件类型
 
 - l（符号链接）
 
-  > 类似Windows下面的快捷方式。第一个属性为 [l]，例如 [lrwxrwxrwx]
+  > 也叫软链接，类似Windows下的快捷方式。第一个属性为 [l]，例如 [lrwxrwxrwx]
 
 - b（块设备）
 
