@@ -1628,6 +1628,8 @@ public class ThreadPoolDemo2 {
 
 ForkJoinPool于JDK7中加入
 
+Fork/Join框架实现了**真正的并行**
+
 Fork/Join可以将一个大的任务拆分成多个子任务进行并行处理，最后将子任务结果合并成最后的计算结果，并进行输出
 
 Fork/Join使用ForkJoinPool来启动，它是一个特殊的线程池，线程数量取决于CPU核数
