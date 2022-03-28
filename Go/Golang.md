@@ -92,6 +92,12 @@ Golang的主要特征：
 
 
 
+
+
+### Go基础语法
+
+Go的关键字和保留字：
+
 ```go
 /**
 	Go只有27个关键字：
@@ -145,10 +151,6 @@ Golang的主要特征：
 可以直接在命令行输入`go`查看相关命令
 
 
-
-
-
-### init和main函数
 
 每个包可以有多个**init**函数，用于包的初始化
 
@@ -449,7 +451,9 @@ len = 3 cap = 4
 */
 
 func sliceDemo2() {
-	// append: 向 slice 尾部添加数据，返回新的 slice 对象
+	// append: 向 slice 尾部添加数据
+	// 若追加元素后len<=cap，则地址不变
+	// 若追加元素后len>cap，则重新开辟2*cap的空间去存储新slice
 	a := []int{1, 2, 3}
 	fmt.Printf("slice a : %v\n", a)
 	b := []int{4, 5, 6}
@@ -465,6 +469,34 @@ func sliceDemo2() {
 	fmt.Printf("%p\n", &c)
 	fmt.Printf("%p\n", &d)
 	fmt.Printf("%p\n", &e)
+
+	fmt.Println("----------")
+
+	// 复制slice
+	arr := [...]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	fmt.Println("arr =", arr)
+	s1 := arr[:5]
+	s2 := arr[8:]
+	fmt.Printf("s1 = %v\n", s1)
+	fmt.Printf("s2 = %v\n", s2)
+	copy(s2, s1)
+	fmt.Printf("copied s1 = %v\n", s1)
+	fmt.Printf("copied s2 = %v\n", s2)
+	fmt.Println("copied arr =", arr)
+
+	fmt.Println("----------")
+
+	str := "hello world"
+	s3 := []byte(str)
+	fmt.Println("s3 =", string(s3))
+	fmt.Printf("str: %p, s3: %p\n", &str, s3)
+	s3 = s3[:8]
+	s3[6] = 'G'
+	fmt.Println("s3 =", string(s3))
+	fmt.Printf("str: %p, s3: %p\n", &str, s3)
+	s3 = append(s3, '!')
+	fmt.Println("s3 =", string(s3))
+	fmt.Printf("str: %p, s3: %p\n", &str, s3)
 }
 
 /*
@@ -479,7 +511,25 @@ slice e : [1 2 3 4 5 6 7 8 9 10]
 0xc0000040d8
 0xc000004108
 0xc000004138
+----------
+arr = [0 1 2 3 4 5 6 7 8 9]
+s1 = [0 1 2 3 4]
+s2 = [8 9]
+copied s1 = [0 1 2 3 4]
+copied s2 = [0 1]
+copied arr = [0 1 2 3 4 5 6 7 0 1]
+----------
+s3 = hello world
+str: 0xc00004c250, s3: 0xc00001a220
+s3 = hello Go
+str: 0xc00004c250, s3: 0xc00001a220
+s3 = hello Go!
+str: 0xc00004c250, s3: 0xc00001a220
 */
 
 ```
+
+
+
+切片中容量不够时，将重新分配底层数组并复制数据，通常容量扩充为原先的2倍
 
