@@ -686,3 +686,128 @@ defer特性：
 
 > 多个 defer 注册，按 FILO 次序执行 ( 先进后出 )。哪怕函数或某个延迟调用发生错误，这些调用依旧会被执行。
 
+
+
+
+
+### 异常处理
+
+Golang中 `panic` 用于抛出错误，`recover` 用于捕获错误，`error` 用于表示错误对象
+
+`panic()` 之后的代码都不执行
+
+`recover()` 只有在 `defer` 内直接调用才有效，否则总是返回nil
+
+标准库 `errors.New()` 和 `fmt.Errorf()` 用于创建实现error接口的错误对象
+
+演示代码：
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+func errDemo() {
+	errTest1()
+	// 输出"panic error!"
+
+	errTest2()
+	// 输出：
+	// defer inner
+	// <nil>
+	// test panic
+
+	errTest3()
+	// 输出"test panic"
+
+	errTest4()
+	// 输出"divided by zero"
+}
+
+func errTest1() {
+	defer func() {
+		if err := recover(); err != nil {
+			println(err.(string)) // 将interface{}转型为具体类型
+		}
+	}()
+
+	panic("panic error!")
+}
+
+func errTest2() {
+	defer func() {
+		fmt.Println(recover()) // 有效
+	}()
+	defer recover()              // 无效！
+	defer fmt.Println(recover()) // 无效！
+	defer func() {
+		func() {
+			println("defer inner")
+			recover() // 无效！
+		}()
+	}()
+
+	panic("test panic")
+}
+
+func errTest3() {
+	defer except() // 有效
+	panic("test panic")
+}
+
+func except() {
+	fmt.Println(recover())
+}
+
+var ErrDivByZero = errors.New("divided by zero")
+
+func divTest(x, y int) (int, error) {
+	if y == 0 {
+		return 0, ErrDivByZero
+	}
+	return x / y, nil
+}
+
+func errTest4() {
+	defer func() {
+		fmt.Println(recover())
+	}()
+	switch z, err := divTest(10, 0); err {
+	case nil:
+		println(z)
+	case ErrDivByZero:
+		panic(err)
+	}
+}
+
+```
+
+
+
+> 延迟调用中引发的错误，可被后续延迟调用捕获，但仅最后一个错误可被捕获。
+
+
+
+
+
+### 方法
+
+一个方法就是一个包含了接收者的函数
+
+方法格式：
+
+```go
+// 值类型接收者 方法内部对对象的副本进行操作
+func (receiver T) methodName(args) (retVals) {
+    // code
+}
+
+// 指针类型接收者 方法内部对指针进行操作
+func (receiver *T) methodName(args) (retVals) {
+    // code
+}
+```
+
