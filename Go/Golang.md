@@ -638,9 +638,13 @@ Golang中的Map是引用类型，必须初始化才能使用
 
 
 
+
+
+## 第4节 函数和方法
+
 ### 函数
 
-函数也是一种类型，一个函数可以像普通变量一样被传递或使用
+**函数**也是一种**派生数据类型**，一个函数可以像普通变量一样被传递或使用
 
 
 
@@ -664,10 +668,6 @@ Golang可变参数本质上就是一个slice
 
 
 
-
-
-
-## 第4节 函数和方法
 
 ### 延迟调用
 
@@ -810,4 +810,53 @@ func (receiver *T) methodName(args) (retVals) {
     // code
 }
 ```
+
+
+
+
+
+
+
+## 第5节 面向对象
+
+### 匿名字段
+
+通过**匿名字段**可以实现类似**继承**的覆盖能力
+
+```go
+package main
+
+import "fmt"
+
+type User struct {
+    id   int
+    name string
+}
+
+type Manager struct {
+    User // 匿名字段
+    title string
+}
+
+func (u *User) ToString() string {
+    return fmt.Sprintf("User: %p, %v", u, u)
+}
+
+func (m *Manager) ToString() string {
+    return fmt.Sprintf("Manager: %p, %v", m, m)
+}
+
+// 通过匿名字段实现继承的覆盖能力
+func main() {
+    m := Manager{User{1, "Tom"}, "Administrator"}
+    fmt.Println(m.ToString())
+    fmt.Println(m.User.ToString())
+}
+```
+
+
+
+
+
+### 接口
 
