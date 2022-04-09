@@ -251,6 +251,14 @@ Golang的数据类型分为：
 - 数字类型
 - 字符串类型
 - 派生类型
+  1. 指针
+  2. 数组
+  3. 结构体
+  4. Channel
+  5. 函数
+  6. slice
+  7. interface
+  8. map
 
 空指针值为nil
 
@@ -859,4 +867,51 @@ func main() {
 
 
 ### 接口
+
+Golang中接口**interface**是一种**类型**
+
+接口定义格式：
+
+```go
+type interfaceName interface {
+    method1(args...) retVals
+    method2(args...) retVals
+    // ...
+}
+
+// for example:
+type writer interface {
+    Write([]byte) error
+}
+```
+
+
+
+一个类型可以实现多个接口
+
+如果一个类型实现了接口中的全部方法，那么就实现了这个接口
+
+一个接口的方法，不一定需要由一个类型完全实现，接口的方法可以通过在类型中嵌入其他类型来实现
+
+接口与接口间可以通过嵌套创造出新的接口
+
+
+
+**空接口**是指没有定义任何方法的接口
+
+`var x interface{}`
+
+**任何类型**都实现了空接口，换言之空接口可以存储任意类型的值
+
+`x = anyVar`
+
+空接口作为map的值：
+
+```go
+var studentInfo = make(map[string]interface{})
+studentInfo["name"] = "李白"
+studentInfo["age"] = 18
+studentInfo["married"] = false
+fmt.Println(studentInfo)
+```
 
