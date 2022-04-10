@@ -270,6 +270,21 @@ string底层是一个byte数组
 
 
 
+### 输入与输出
+
+`println()` 与 `fmt.Println()`的区别：
+
+1. 前者在builtin包，不需要import；后者在fmt包，需要import
+2. 前者输出到标准错误，后者输出到标准输出
+3. 前者没有返回值，后者返回写入字节数和写入时发生的错误
+4. 前者不接受数组或结构体作为参数
+
+[Go语言初见println和fmt.Println区别](https://blog.csdn.net/m0_56289903/article/details/121079543)
+
+
+
+
+
 
 
 ## 第3节 派生数据类型
@@ -914,4 +929,79 @@ studentInfo["age"] = 18
 studentInfo["married"] = false
 fmt.Println(studentInfo)
 ```
+
+
+
+
+
+
+
+## 第6节 并发编程
+
+### goroutine
+
+**协程**的概念：
+
+- 协程是**轻量级**的线程
+- 一个线程上可以运行多个协程
+- 栈空间独立，堆空间共享
+- 本质上类似于用户级线程
+
+
+
+**goroutine**：
+
+- 由官方实现的超级“线程池”
+- 由**runtime**调度和管理，调度是在用户态下完成的
+- goroutine中的任务会自动地合理分配给每个CPU
+- 每个实例仅占**4~5KB**
+- 奉行通过通信来共享内存，而不是共享内存来通信
+- 一个goroutine对应一个函数
+- goroutine的栈初始时通常为2KB，可**按需增大和缩小**
+
+
+
+程序启动时会为 `main()` 创建一个默认的goroutine
+
+当 `main()` 函数结束的时候该goroutine就结束了，所有在 `main()` 函数中启动的goroutine会一同结束
+
+
+
+```go
+// 一个简单的多线程同步示例
+func goroutineDemo() {
+	for i := 0; i < 10; i++ {
+		wg.Add(1) // 启动一个goroutine就登记+1
+		go hello(i)
+	}
+	wg.Wait() // 等待所有登记的goroutine都结束
+}
+
+func hello(i int) {
+	defer wg.Done() // goroutine结束就登记-1
+	fmt.Println("Hello Goroutine!", i)
+}
+
+var wg sync.WaitGroup
+```
+
+
+
+**GPM**是runtime层面实现的一套**调度系统**：
+
+1. **G**代表存放本goroutine信息和P的绑定信息
+2. **P**管理一组goroutine队列，并存储当前goroutine运行的上下文环境，与G一一映射
+3. **M**是对操作系统内核线程的虚拟，与内核线程一般一一映射
+
+
+
+Go1.5版本后P的个数默认为物理线程数
+
+
+
+Go并发的优势：
+
+1. 并发编程相对容易（goroutine即涵盖了对进程、线程、协程的管理）
+2. goroutine超轻量，创建、销毁成本低
+3. 调度均在用户态完成，成本比操作系统调度OS线程低很多
 
