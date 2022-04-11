@@ -663,7 +663,7 @@ Golang中的Map是引用类型，必须初始化才能使用
 
 
 
-## 第4节 函数和方法
+## 第4节 函数与方法
 
 ### 函数
 
@@ -676,7 +676,7 @@ Golang中的Map是引用类型，必须初始化才能使用
 - **值传递**：在调用函数时将实际参数复制一份传递到函数中，这样在函数中如果对参数进行修改，将不会影响到实际参数
 - **引用传递**：在调用函数时将实际参数的地址传递到函数中，那么在函数中对参数所进行的修改，将影响到实际参数
 
-Golang默认采用值传递，但天生就是指针的类型，包括slice、map、channel、指针、interface
+Golang默认采用值传递，但天生就是指针的类型，包括slice、map、channel、指针、interface采用引用传递
 
 
 
@@ -955,7 +955,7 @@ fmt.Println(studentInfo)
 - 由**runtime**调度和管理，调度是在用户态下完成的
 - goroutine中的任务会自动地合理分配给每个CPU
 - 每个实例仅占**4~5KB**
-- 奉行通过通信来共享内存，而不是共享内存来通信
+- 提倡通过通信来共享内存，而不是共享内存来通信
 - 一个goroutine对应一个函数
 - goroutine的栈初始时通常为2KB，可**按需增大和缩小**
 
@@ -993,7 +993,7 @@ var wg sync.WaitGroup
 2. **P**管理一组goroutine队列，并存储当前goroutine运行的上下文环境，与G一一映射
 3. **M**是对操作系统内核线程的虚拟，与内核线程一般一一映射
 
-
+*因此goroutine和OS线程是m:n的关系*
 
 Go1.5版本后P的个数默认为物理线程数
 
@@ -1004,4 +1004,134 @@ Go并发的优势：
 1. 并发编程相对容易（goroutine即涵盖了对进程、线程、协程的管理）
 2. goroutine超轻量，创建、销毁成本低
 3. 调度均在用户态完成，成本比操作系统调度OS线程低很多
+4. 充分利用物理多核处理器的性能
+
+
+
+**runtime**包的相关函数：
+
+| 函数                 | 作用                                      |
+| -------------------- | ----------------------------------------- |
+| runtime.Gosched()    | 让当前goroutine让出CPU时间片              |
+| runtime.Goexit()     | 退出当前goroutine                         |
+| runtime.GOMAXPROCS() | 设置当前程序并发运行时占用的CPU逻辑核心数 |
+
+Go1.5版本之前默认采用单核执行，1.5版本之后默认使用全部的CPU逻辑核心执行
+
+
+
+
+
+### channel
+
+channel的概念：
+
+> 如果说goroutine是Go程序并发的执行体，channel就是它们之间的连接。channel是可以让一个goroutine发送特定值到另一个goroutine的通信机制。
+
+
+
+channel的规则：
+
+- FIFO
+
+- 声明channel时需要为其指定一个数据类型
+
+- 声明并初始化
+
+  如 `var ch chan int = make(chan int)` 或 `ch := make(chan int)`
+
+- 操作：
+
+  - 发送和接收数据都使用`<-`
+
+    如 `ch <- 10` 表示把10发送到ch中，`x := <- ch` 表示从ch中接收值并赋值给变量x
+
+  - 关闭通道 `close(ch)`
+
+    channel是可以被垃圾回收机制回收的，所以关闭channel不是必须的
+
+
+
+**无缓冲通道**上的发送/接收将阻塞当前goroutine，直到channel的数据被另一个goroutine接收/发送
+
+```go
+func receiver(ch chan int) {
+	temp := <-ch
+	fmt.Println("接收成功：", temp)
+}
+
+func syncDemo() {
+	ch := make(chan int)
+	go receiver(ch) // 启用goroutine从通道接收值
+	num := 10
+	ch <- num
+	fmt.Println("发送成功：", num)
+}
+```
+
+
+
+只要通道的容量大于0，则该通道就是**有缓冲通道**
+
+有缓冲的通道满了时就阻塞goroutine
+
+```go
+func chanDemo() {
+	ch := make(chan int, 1) // 创建一个容量为1的有缓冲区通道
+	ch <- 10                // main不会阻塞
+	fmt.Println("发送成功")
+}
+```
+
+
+
+判断channel是否关闭的方式常用的有两种：
+
+1. 利用函数返回值
+2. 利用for range循环
+
+代码示例：
+
+```go
+// outCh是一个单向通道 对于goroutine来说只能发送
+func counter(outCh chan<- int) {
+	for i := 0; i < 100; i++ {
+		outCh <- i
+	}
+	close(outCh)
+}
+
+// inCh是一个单向通道 对于goroutine来说只能接收
+func squarer(outCh chan<- int, inCh <-chan int) {
+	for {
+		// 若通道关闭后再取值 ok==false
+		i, ok := <-inCh
+		if !ok {
+			break
+		}
+		outCh <- i * i
+	}
+	close(outCh)
+}
+
+func printer(inCh <-chan int) {
+	// 通道关闭后会退出for range循环
+	for i := range inCh {
+		fmt.Println(i)
+	}
+}
+
+// 打印整数0~99的平方
+func chanDemo4() {
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+	go counter(ch1)
+	go squarer(ch2, ch1)
+	printer(ch2)
+}
+```
+
+
+
+在函数传参及任何赋值操作中将双向通道转换为单向通道是可以的，但反过来是不可以的
 
