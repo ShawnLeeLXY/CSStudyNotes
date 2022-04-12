@@ -241,6 +241,10 @@ const (
 
 
 
+> 数值型常量没有确定的类型，直到被给定某个类型
+
+
+
 
 
 ### 数据类型简介
@@ -615,13 +619,13 @@ str: 0xc00004c250, s3: 0xc00001a220
 
 切片中容量不够时，将重新分配底层数组并复制数据，通常容量扩充为原先的2倍
 
-
+slice可以组成多维数据结构，内部的slice长度可以不一致，这一点和多维数组不同
 
 数组的内存分配通常在栈上，切片的内存分配通常在堆上
 
 
 
-Slice的数据结构定义：
+slice的数据结构定义：
 
 ```go
 type slice struct {
@@ -1249,6 +1253,54 @@ func write(wg *sync.WaitGroup, rwLock *sync.RWMutex) {
 	rwLock.Lock()
 	time.Sleep(time.Millisecond * 100) // 假设写操作用时100ms
 	rwLock.Unlock()
+	wg.Done()
+}
+```
+
+
+
+
+
+### 原子操作
+
+对于基本数据类型，可以使用标准库里的sync/atomic进行原子操作来保证并发安全，效率通常高于互斥锁
+
+```go
+func atomicDemo() {
+	var num int64
+	var wg sync.WaitGroup
+	var lock sync.Mutex
+
+	start := time.Now()
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go mutexAdd(&num, &lock, &wg)
+	}
+	wg.Wait()
+	end := time.Now()
+	fmt.Println("mutex用了", end.Sub(start))
+
+	start = time.Now()
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go atomicAdd(&num, &wg)
+	}
+	wg.Wait()
+	end = time.Now()
+	fmt.Println("atomic用了", end.Sub(start))
+}
+
+// 互斥锁
+func mutexAdd(num *int64, lock *sync.Mutex, wg *sync.WaitGroup) {
+	lock.Lock()
+	*num += 1
+	lock.Unlock()
+	wg.Done()
+}
+
+// 原子操作
+func atomicAdd(num *int64, wg *sync.WaitGroup) {
+	atomic.AddInt64(num, 1)
 	wg.Done()
 }
 ```
