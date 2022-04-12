@@ -1135,3 +1135,121 @@ func chanDemo4() {
 
 在函数传参及任何赋值操作中将双向通道转换为单向通道是可以的，但反过来是不可以的
 
+
+
+通过合理使用channel，可以手动实现goroutine池的效果
+
+
+
+time包的 `time.NewTimer()` 可返回一个组合了`C <-chan Time`的Timer类型指针，结合chan的接收数据功能 `<- timer.C`，可实现**定时器**的功能
+
+
+
+
+
+### select
+
+**select**关键字可以**同时响应多个channel**的操作
+
+```go
+func selectDemo() {
+	chSlice := make([]chan string, 5)
+	for i := 0; i < 5; i++ {
+		chSlice[i] = make(chan string)
+		ind := i
+		go func(ind int) {
+			time.Sleep(time.Millisecond * (time.Duration)(rand.Int()%100))
+			chSlice[ind] <- fmt.Sprintf("channel %d say: hello!\n", ind)
+		}(ind)
+	}
+	// select同时监听多个chan 直到其中一个ready
+	select {
+	case s0 := <-chSlice[0]:
+		fmt.Println(s0)
+	case s1 := <-chSlice[1]:
+		fmt.Println(s1)
+	case s2 := <-chSlice[2]:
+		fmt.Println(s2)
+	case s3 := <-chSlice[3]:
+		fmt.Println(s3)
+	case s4 := <-chSlice[4]:
+		fmt.Println(s4)
+	}
+}
+```
+
+
+
+
+
+### 锁
+
+互斥锁：
+
+```go
+func mutexDemo() {
+	var num int
+	var wg sync.WaitGroup
+	var lock sync.Mutex
+	wg.Add(3)
+	for i := 0; i < 3; i++ {
+		go add(&num, &wg, &lock)
+	}
+	wg.Wait()
+	fmt.Println(num) //3000
+}
+
+func add(num *int, wg *sync.WaitGroup, lock *sync.Mutex) {
+	for i := 0; i < 1000; i++ {
+		lock.Lock()
+		*num += 1
+		lock.Unlock()
+	}
+	wg.Done()
+}
+```
+
+
+
+> 互斥锁是完全互斥的，但是有很多实际的场景下是**读多写少**的，当我们并发的去读取一个资源不涉及资源修改的时候是没有必要加锁的，这种场景下使用**读写锁**是更好的一种选择
+
+读写锁：
+
+```go
+func RWMutexDemo() {
+	var wg sync.WaitGroup
+	var rwLock sync.RWMutex
+	start := time.Now()
+	wg.Add(1012)
+	go func() {
+		for i := 0; i < 1000; i++ {
+			go read(&wg, &rwLock)
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 0; i < 10; i++ {
+			go write(&wg, &rwLock)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	end := time.Now()
+	fmt.Println("total time:", end.Sub(start))
+}
+
+func read(wg *sync.WaitGroup, rwLock *sync.RWMutex) {
+	rwLock.RLock()
+	time.Sleep(time.Millisecond) // 假设读操作用时1ms
+	rwLock.RUnlock()
+	wg.Done()
+}
+
+func write(wg *sync.WaitGroup, rwLock *sync.RWMutex) {
+	rwLock.Lock()
+	time.Sleep(time.Millisecond * 100) // 假设写操作用时100ms
+	rwLock.Unlock()
+	wg.Done()
+}
+```
+
