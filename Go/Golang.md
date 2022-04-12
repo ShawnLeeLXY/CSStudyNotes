@@ -8,6 +8,7 @@
 
 - [Go官方网站](https://go.dev/)
 - [Go国内官方网站](https://golang.google.cn/)
+- [Go语言之旅中文版](https://tour.go-zh.org/list)
 - [Go语言简明教程](https://geektutu.com/post/quick-golang.html)
 - [Go by Example中文版](https://gobyexample-cn.github.io/)
 - [菜鸟教程-Go语言教程](https://www.runoob.com/go/go-tutorial.html)
