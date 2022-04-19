@@ -30,7 +30,7 @@
 
 ### 配置环境
 
-环境配置步骤：
+Windows环境配置步骤：
 
 1. 官网下载对应操作系统的安装包或压缩包
 2. 下载后安装或解压到可自定义的路径下
@@ -38,6 +38,38 @@
 4. 在系统变量里添加GOPATH，对应目录下必须有src、bin、pkg三个文件夹
 5. 将GOPATH的路径添加进PATH
 6. 在命令行输入 `go env` 查看GOPATH是否设置成功
+
+
+
+Linux环境配置步骤：
+
+1. 官网下载压缩包
+
+2. 上传至Linux中
+
+3. 如果之前存在/usr/local/go，需要先删除干净
+
+4. 解压压缩包至/usr/local
+
+   ```bash
+   sudo tar -C /usr/local -zxvf go1.18.1.linux-amd64.tar.gz
+   ```
+
+5. 在$HOME/下创建gopath，并在gopath/下创建src、pkg、bin三个文件夹
+
+6. 打开$HOME/.profile或/etc/profile（后者安装至整个操作系统）
+
+7. 添加如下三行：
+
+   ```bash
+   export GOROOT=/usr/local/go
+   export GOPATH=$HOME/gopath
+   export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+   ```
+
+8. 命令行输入`source $HOME/.profile`或`source /etc/profile`
+
+9. 命令行输入`go version`检查版本是否正确
 
 
 
