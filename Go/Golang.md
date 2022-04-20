@@ -8,6 +8,7 @@
 
 - [Go官方网站](https://go.dev/)
 - [Go国内官方网站](https://golang.google.cn/)
+- [Go标准库中文文档](https://studygolang.com/pkgdoc)
 - [Go语言之旅中文版](https://tour.go-zh.org/list)
 - [Go语言简明教程](https://geektutu.com/post/quick-golang.html)
 - [Go by Example中文版](https://gobyexample-cn.github.io/)
@@ -1337,4 +1338,24 @@ func atomicAdd(num *int64, wg *sync.WaitGroup) {
 	wg.Done()
 }
 ```
+
+
+
+
+
+
+
+## 第7节 RPC
+
+### RPC简介
+
+**远程过程调用**（Remote Procedure Call，**RPC**）是一个计算机通信协议，该协议允许运行于一台计算机的程序调用另一台计算机的子程序，而程序员无需额外地为这个交互作用编程
+
+
+
+Golang中封装好了实现RPC的库
+
+net/rpc仅支持Go开发的服务器和客户端交互
+
+net/rpc/jsonrpc支持跨语言调用
 
