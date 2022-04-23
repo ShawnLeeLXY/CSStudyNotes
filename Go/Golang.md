@@ -6,15 +6,13 @@
 
 相关链接：
 
-- [Go官方网站](https://go.dev/)
-- [Go国内官方网站](https://golang.google.cn/)
-- [Go标准库中文文档](https://studygolang.com/pkgdoc)
-- [Go语言之旅中文版](https://tour.go-zh.org/list)
-- [Go语言简明教程](https://geektutu.com/post/quick-golang.html)
-- [Go by Example中文版](https://gobyexample-cn.github.io/)
-- [菜鸟教程-Go语言教程](https://www.runoob.com/go/go-tutorial.html)
-- [地鼠文档](https://topgoer.cn/)
-- [地鼠文档-Go中文学习文档](https://www.topgoer.com/)
+- [Go官方网站](https://go.dev/) - Google Go语言官网
+- [Go国内官方网站](https://golang.google.cn/) - Go语言官网国内版网站
+- [Go标准库中文文档](https://studygolang.com/pkgdoc) - 官方Go标准库中文翻译版本
+- [Go语言之旅中文版](https://tour.go-zh.org/list) - 官方推荐的简明互动Go编程教程
+- [Go网址导航](https://hao.studygolang.com/) - 包含各种Go语言开发常用的网址
+- [Go by Example中文版](https://gobyexample-cn.github.io/) - 由许多入门级Go代码示例组成
+- [地鼠文档-Go中文学习文档](https://www.topgoer.com/) - 涵盖了Go开发各种方面的教程
 
 
 
@@ -1111,7 +1109,9 @@ func syncDemo() {
 
 只要通道的容量大于0，则该通道就是**有缓冲通道**
 
-有缓冲的通道满了时就阻塞goroutine
+有缓冲的通道满了时就阻塞发送方goroutine
+
+接收方在有值可以接收之前会一直阻塞
 
 ```go
 func chanDemo() {
@@ -1293,6 +1293,12 @@ func write(wg *sync.WaitGroup, rwLock *sync.RWMutex) {
 
 
 
+Go内置了并发数据竞争探测器（race detector），编译和运行时命令加上 `-race` 即可使用，例如 `go build -race xxx.go` 和 `go run -race xxx.go`
+
+race detector动态地检测数据竞争的发生，而不是静态扫描代码
+
+
+
 
 
 ### 原子操作
@@ -1367,4 +1373,84 @@ net/rpc/jsonrpc支持跨语言调用
 2. 方法有两个参数，都是导出类型或内建类型
 3. 方法第一个参数是接收参数，第二个参数是返回给客户端的参数且必须是指针类型
 4. 方法有且仅有一个error类型的返回值
+
+
+
+RPC代码示例
+
+服务端：
+
+```go
+type ArithReq struct {
+	A, B int
+}
+
+type ArithResp struct {
+	Pro, Quo, Rem int
+}
+
+type Arith struct{}
+
+func (a *Arith) Multiply(req ArithReq, resp *ArithResp) error {
+	resp.Pro = req.A * req.B
+	return nil
+}
+
+func (a *Arith) Divide(req ArithReq, resp *ArithResp) error {
+	if req.B == 0 {
+		return errors.New("Divided by zero!")
+	}
+	resp.Quo = req.A / req.B
+	resp.Rem = req.A % req.B
+	return nil
+}
+
+func server() {
+	rpc.Register(new(Arith))
+	rpc.HandleHTTP()
+	fmt.Println("server正在监听...")
+	ln, err := net.Listen("tcp", ":8101")
+	if err != nil {
+		log.Fatal("Arith error:", err)
+	}
+	http.Serve(ln, nil)
+}
+```
+
+
+
+客户端：
+
+```go
+type ArithReq struct {
+	A, B int
+}
+
+type ArithResp struct {
+	Pro, Quo, Rem int
+}
+
+func client() {
+	conn, err := rpc.DialHTTP("tcp", "175.178.19.110:8101")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		req := ArithReq{}
+		resp := ArithResp{}
+		fmt.Println("请输入A和B的值：")
+		fmt.Scan(&req.A, &req.B)
+		err := conn.Call("Arith.Multiply", req, &resp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%d和%d的乘积是%d\n", req.A, req.B, resp.Pro)
+		err2 := conn.Call("Arith.Divide", req, &resp)
+		if err2 != nil {
+			log.Fatal(err2)
+		}
+		fmt.Printf("%d和%d的商是%d，余数是%d\n", req.A, req.B, resp.Quo, resp.Rem)
+	}
+}
+```
 
