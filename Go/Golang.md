@@ -1109,7 +1109,9 @@ func syncDemo() {
 
 只要通道的容量大于0，则该通道就是**有缓冲通道**
 
-有缓冲的通道满了时就阻塞goroutine
+有缓冲的通道满了时就阻塞发送方goroutine
+
+接收方在有值可以接收之前会一直阻塞
 
 ```go
 func chanDemo() {
