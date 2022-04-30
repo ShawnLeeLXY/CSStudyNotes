@@ -1293,6 +1293,12 @@ func write(wg *sync.WaitGroup, rwLock *sync.RWMutex) {
 
 
 
+Go内置了并发数据竞争探测器（race detector），编译和运行时命令加上 `-race` 即可使用，例如 `go build -race xxx.go` 和 `go run -race xxx.go`
+
+race detector动态地检测数据竞争的发生，而不是静态扫描代码
+
+
+
 
 
 ### 原子操作
